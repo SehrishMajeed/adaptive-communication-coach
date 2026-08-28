@@ -7,7 +7,10 @@ class CoachingState(TypedDict):
     attempt_number: int
     scenario: str
     
-    transcript: str
+    audio_bytes: Optional[bytes]
+    mime_type: Optional[str]
+    
+    transcript: Optional[str]
     duration_seconds: float
     
     deterministic_metrics: Optional[Dict[str, Any]]

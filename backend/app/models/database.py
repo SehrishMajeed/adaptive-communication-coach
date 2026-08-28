@@ -49,6 +49,37 @@ class UserProfile(Base):
     current_focus_area = Column(String, nullable=True)
     
     total_sessions = Column(Integer, default=0)
+    
+class CoachingSession(Base):
+    __tablename__ = "coaching_sessions"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    session_id = Column(String, unique=True, index=True)
+    user_id = Column(String, index=True)
+    scenario = Column(String)
+
+class CoachingAttempt(Base):
+    __tablename__ = "coaching_attempts"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    session_id = Column(String, index=True)
+    attempt_number = Column(Integer)
+    transcript = Column(String)
+    duration_seconds = Column(Float)
+    
+    # Metrics
+    wpm = Column(Float, nullable=True)
+    filler_words_count = Column(Integer, default=0)
+    
+    # Evaluation
+    clarity = Column(Float, nullable=True)
+    structure = Column(Float, nullable=True)
+    conciseness = Column(Float, nullable=True)
+    audience_awareness = Column(Float, nullable=True)
+    
+    strengths = Column(JSON, default=list)
+    weaknesses = Column(JSON, default=list)
+    focus_area = Column(String, nullable=True)
 
 # Create tables safely
 Base.metadata.create_all(bind=engine)

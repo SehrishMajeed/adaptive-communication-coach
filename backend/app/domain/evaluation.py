@@ -2,6 +2,7 @@ from pydantic import BaseModel
 from typing import List
 
 class CommunicationEvaluation(BaseModel):
+    transcript: str
     clarity: float
     structure: float
     conciseness: float
