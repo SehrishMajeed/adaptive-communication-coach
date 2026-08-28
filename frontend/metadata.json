@@ -1,0 +1,8 @@
+{
+  "name": "Aura: AI Soft Skills Coach",
+  "description": "An AI-powered coach to help you master public speaking and communication. Record yourself, get instant feedback on your delivery, body language, and vocal tone, and track your progress daily.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}

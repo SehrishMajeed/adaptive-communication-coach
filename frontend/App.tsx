@@ -1,0 +1,84 @@
+
+import React, { useState, useCallback } from 'react';
+import { AppState, AIFeedback } from './types';
+import WelcomeScreen from './components/WelcomeScreen';
+import RecordingScreen from './components/RecordingScreen';
+import ReviewScreen from './components/ReviewScreen';
+import FeedbackScreen from './components/FeedbackScreen';
+import Loader from './components/Loader';
+import { analyzeVideo } from './services/api';
+
+const App: React.FC = () => {
+  const [appState, setAppState] = useState<AppState>(AppState.WELCOME);
+  const [videoBlob, setVideoBlob] = useState<Blob | null>(null);
+  const [feedback, setFeedback] = useState<AIFeedback | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleStart = () => {
+    setAppState(AppState.RECORDING);
+  };
+
+  const handleRecordingComplete = (blob: Blob) => {
+    setVideoBlob(blob);
+    setAppState(AppState.REVIEW);
+  };
+
+  const handleAnalysis = useCallback(async () => {
+    if (!videoBlob) return;
+
+    setAppState(AppState.ANALYZING);
+    setError(null);
+    setFeedback(null);
+
+    try {
+      const result = await analyzeVideo(videoBlob);
+      setFeedback(result);
+      setAppState(AppState.FEEDBACK);
+    } catch (err) {
+      console.error(err);
+      const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred.';
+      setError(`Failed to get AI feedback. ${errorMessage}`);
+      setAppState(AppState.REVIEW); // Go back to review screen on error
+    }
+  }, [videoBlob]);
+
+  const handleRestart = () => {
+    setAppState(AppState.WELCOME);
+    setVideoBlob(null);
+    setFeedback(null);
+    setError(null);
+  };
+
+  const renderContent = () => {
+    switch (appState) {
+      case AppState.WELCOME:
+        return <WelcomeScreen onStart={handleStart} />;
+      case AppState.RECORDING:
+        return <RecordingScreen onRecordingComplete={handleRecordingComplete} />;
+      case AppState.REVIEW:
+        return <ReviewScreen videoBlob={videoBlob!} onAnalyze={handleAnalysis} error={error} onRestart={handleRestart} />;
+      case AppState.ANALYZING:
+        return <Loader />;
+      case AppState.FEEDBACK:
+        return <FeedbackScreen feedback={feedback!} onRestart={handleRestart} />;
+      default:
+        return <WelcomeScreen onStart={handleStart} />;
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-900 text-white font-sans flex flex-col items-center justify-center p-4">
+        <header className="absolute top-0 left-0 p-6 flex items-center space-x-3">
+            <div className="w-10 h-10 bg-gradient-to-tr from-purple-500 to-indigo-600 rounded-full flex items-center justify-center">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-white"><path d="M12 22a6.955 6.955 0 0 1-7-7c0-4 7-11 7-11s7 7 7 11a6.955 6.955 0 0 1-7 7Z"/><path d="M12 11a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"/></svg>
+            </div>
+            <h1 className="text-2xl font-bold tracking-tight">Aura Coach</h1>
+        </header>
+        <main className="w-full max-w-4xl">
+            {renderContent()}
+        </main>
+    </div>
+  );
+};
+
+export default App;
