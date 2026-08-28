@@ -18,39 +18,60 @@ app.add_middleware(
 MOCK_TRANSCRIPT = "Um, hello. I am like, very excited to be here. You know, building this project is actually quite fun."
 MOCK_DURATION = 10.0 # seconds
 
+from .agent.graph import build_coaching_graph
+from .agent.state import CoachingState
+
+graph = build_coaching_graph()
+
 @app.post("/api/sessions/latest/attempts")
 async def process_attempt(audio: UploadFile = File(...)):
     # 1. (Mock) Transcription
     transcript = MOCK_TRANSCRIPT
     duration = MOCK_DURATION # In reality, we extract this from the audio file
     
-    # 2. Deterministic Metrics
-    metrics = calculate_deterministic_metrics(transcript, duration)
+    # 2. Execute Graph
+    initial_state = CoachingState(
+        session_id="mock_session",
+        user_id="mock_user",
+        attempt_number=1,
+        scenario="Explain a technical project to a non-technical person in 60 seconds.",
+        transcript=transcript,
+        duration_seconds=duration,
+        deterministic_metrics=None,
+        rubric_evaluation=None,
+        focus_area=None,
+        next_exercise=None,
+        previous_attempt_metrics=None,
+        comparison_delta=None
+    )
     
-    # 3. (Mock) LLM Evaluation
-    # We will wire up LangGraph in the next step. 
-    # For now, return the mock shape expected by the frontend.
+    final_state = graph.invoke(initial_state)
+    metrics = final_state.get("deterministic_metrics", {})
+    eval = final_state.get("rubric_evaluation")
+    
+    if not eval:
+        raise ValueError("Failed to evaluate communication")
+        
+    # 3. Return shaped response for frontend
     return {
-        "overallImpression": "Good start, but watch the filler words.",
-        "confidenceScore": 75,
-        "clarityScore": 80,
-        "engagementScore": 70,
+        "overallImpression": "Good start, let's keep practicing.",
+        "confidenceScore": int(eval.confidence * 10) if eval else 75,
+        "clarityScore": int(eval.clarity * 10) if eval else 80,
+        "engagementScore": int(eval.audience_awareness * 10) if eval else 70,
         "strengths": {
-            "bodyLanguage": ["Good posture"],
-            "vocalVariety": ["Clear volume"],
-            "content": ["Started strong"]
+            "bodyLanguage": ["Good posture (mock)"],
+            "vocalVariety": ["Clear volume (mock)"],
+            "content": eval.strengths
         },
         "areasForImprovement": {
-            "bodyLanguage": ["Maintain eye contact"],
-            "vocalVariety": ["Vary your tone"],
-            "content": ["Reduce filler words"]
+            "bodyLanguage": ["Maintain eye contact (mock)"],
+            "vocalVariety": ["Vary your tone (mock)"],
+            "content": eval.weaknesses
         },
-        "fillerWords": metrics["filler_words_list"],
+        "fillerWords": metrics.get("filler_words_list", []),
         "pace": {
-            "wpm": metrics["wpm"],
-            "feedback": "Pace is a bit slow." if metrics["wpm"] < 120 else "Good pace."
+            "wpm": metrics.get("wpm", 0),
+            "feedback": "Pace is a bit slow." if metrics.get("wpm", 0) < 120 else "Good pace."
         },
-        "actionableTips": [
-            "Pause instead of saying 'um'."
-        ]
+        "actionableTips": [final_state.get("next_exercise", "Keep practicing.")]
     }
