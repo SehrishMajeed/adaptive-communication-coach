@@ -6,3 +6,4 @@ langchain
 langgraph
 google-genai
 sqlalchemy
+psycopg2-binary

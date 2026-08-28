@@ -1,11 +1,32 @@
+import os
 from sqlalchemy import create_engine, Column, Integer, String, Float, JSON
 from sqlalchemy.orm import declarative_base, sessionmaker
 
-SQLALCHEMY_DATABASE_URL = "sqlite:///./adaptive_coach.db"
+raw_db_url = os.environ.get("DATABASE_URL", "").strip()
 
-engine = create_engine(
-    SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
-)
+if not raw_db_url:
+    # Fallback to local SQLite if no DATABASE_URL is provided
+    SQLALCHEMY_DATABASE_URL = "sqlite:///./adaptive_coach.db"
+else:
+    # Normalize legacy Render/Heroku postgres:// to postgresql://
+    if raw_db_url.startswith("postgres://"):
+        SQLALCHEMY_DATABASE_URL = raw_db_url.replace("postgres://", "postgresql://", 1)
+    else:
+        SQLALCHEMY_DATABASE_URL = raw_db_url
+
+    # Fail fast on obviously invalid configurations
+    if not SQLALCHEMY_DATABASE_URL.startswith(("postgresql://", "sqlite:///")):
+        raise ValueError("Invalid DATABASE_URL. Must start with postgres://, postgresql://, or sqlite:///")
+
+# Configure engine arguments based on dialect
+engine_kwargs = {}
+if SQLALCHEMY_DATABASE_URL.startswith("sqlite:///"):
+    engine_kwargs["connect_args"] = {"check_same_thread": False}
+else:
+    # For robust hosted connections
+    engine_kwargs["pool_pre_ping"] = True
+
+engine = create_engine(SQLALCHEMY_DATABASE_URL, **engine_kwargs)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 Base = declarative_base()
@@ -29,5 +50,5 @@ class UserProfile(Base):
     
     total_sessions = Column(Integer, default=0)
 
-# Create tables
+# Create tables safely
 Base.metadata.create_all(bind=engine)
