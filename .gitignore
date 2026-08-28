@@ -1,0 +1,36 @@
+# Environment Variables
+.env
+.env.*
+!.env.example
+
+# Node Modules
+node_modules/
+dist/
+build/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+env/
+
+# Databases
+*.db
+*.sqlite3
+adaptive_coach.db
+
+# Secrets & Credentials
+*.pem
+*.key
+credentials/
+
+# Temporary Files
+tmp/
+temp/
+*.mp4
+*.webm
+*.wav
+*.mp3
+recordings/
