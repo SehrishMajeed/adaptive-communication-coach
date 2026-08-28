@@ -5,7 +5,8 @@ export const analyzeVideo = async (videoBlob: Blob): Promise<AIFeedback> => {
   formData.append('audio', videoBlob, 'recording.webm'); // Using webm, or extract audio if needed.
 
   try {
-    const response = await fetch('http://localhost:8000/api/sessions/latest/attempts', {
+    const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+    const response = await fetch(`${baseUrl}/api/sessions/latest/attempts`, {
       method: 'POST',
       body: formData,
     });
