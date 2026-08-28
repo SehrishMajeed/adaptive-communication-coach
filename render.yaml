@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: adaptive-coach-backend
+    env: python
+    buildCommand: "pip install -r backend/requirements.txt"
+    startCommand: "cd backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT"
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: LANGSMITH_TRACING
+        value: "true"
+      - key: LANGSMITH_PROJECT
+        value: "adaptive-communication-coach"
+      - key: LANGSMITH_API_KEY
+        sync: false
