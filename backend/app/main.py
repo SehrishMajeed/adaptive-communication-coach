@@ -1,6 +1,9 @@
 import os
-from fastapi import FastAPI, UploadFile, File
+from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from dotenv import load_dotenv
+
+load_dotenv()
 from pydantic import BaseModel
 from typing import List, Dict, Any
 
@@ -89,7 +92,7 @@ async def process_attempt(audio: UploadFile = File(...)):
         eval = final_state.get("rubric_evaluation")
         
         if not eval:
-            raise ValueError("Failed to evaluate communication")
+            raise HTTPException(status_code=500, detail="Failed to evaluate communication")
             
         # 6. Save Attempt to DB
         new_attempt = CoachingAttempt(

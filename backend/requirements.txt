@@ -9,3 +9,5 @@ sqlalchemy
 psycopg2-binary
 
 langsmith
+python-dotenv
+gunicorn
