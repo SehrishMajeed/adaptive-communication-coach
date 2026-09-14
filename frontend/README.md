@@ -1,20 +1,7 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# Frontend
 
-# Run and deploy your AI Studio app
+React/TypeScript and Vite provide recording, three local replay modes and feedback presentation. This remains a prototype with known recording, API-contract, build and type errors.
 
-This contains everything you need to run your app locally.
+Use the [root setup instructions](../README.md#local-development). Run `npm ci` and `npm run dev` from this directory. `VITE_API_BASE_URL` points to FastAPI and defaults to `http://localhost:8000`; do not put a Gemini API key in frontend environment files.
 
-View your app in AI Studio: https://ai.studio/apps/drive/1-cVbnW_t0EieJZQ6tcVr4ip8I9aP_VjV
-
-## Run Locally
-
-**Prerequisites:**  Node.js
-
-
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+The frontend currently uploads the complete audiovisual recording. Audio-only analysis with video kept local is planned, not implemented. See the [current-state audit](../docs/current-state-audit.md) for limitations and the first corrective PR.

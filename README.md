@@ -1,127 +1,70 @@
-<div align="center">
-  <br />
-  <img src="https://raw.githubusercontent.com/lucide-icons/lucide/main/icons/mic.svg" alt="Logo" width="80" height="80">
-  <h1 align="center">Adaptive Communication Intelligence Coach</h1>
-  <p align="center">
-    <strong>An evidence-based, agentic communication coaching platform.</strong>
-    <br />
-    <br />
-    <a href="https://github.com/SehrishMajeed/adaptive-communication-coach/issues">Report Bug</a>
-    ·
-    <a href="https://github.com/SehrishMajeed/adaptive-communication-coach/issues">Request Feature</a>
-  </p>
-</div>
+# Adaptive Communication Coach
 
-<div align="center">
-  <img src="https://img.shields.io/badge/React-19.1.1-61DAFB?style=for-the-badge&logo=react&logoColor=black" alt="React" />
-  <img src="https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white" alt="Tailwind CSS" />
-  <img src="https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white" alt="FastAPI" />
-  <img src="https://img.shields.io/badge/LangGraph-FF4F00?style=for-the-badge&logo=ycombinator&logoColor=white" alt="LangGraph" />
-  <img src="https://img.shields.io/badge/Gemini_2.5-4285F4?style=for-the-badge&logo=google&logoColor=white" alt="Gemini" />
-</div>
-<br />
+**Prototype — not production-ready.** This project explores helping technical people explain complex ideas to different audiences through practice and review. The intended adaptive coaching loop is not implemented yet.
 
-## 📖 The Problem
-People practice speaking repeatedly without knowing what exactly is weak, what they should improve first, or whether they actually improved. Typical AI feedback tools provide one generic response and the conversation ends. There is no evidence, no retry loop, and no persistence.
+## Current implementation
 
-**Aura Coach solves this.** It provides deterministic metrics, qualitative AI evaluation, and a cyclical retry loop based on targeted focus areas.
+React records camera and microphone and offers full, muted-video and audio-only replay. The frontend currently uploads the entire audiovisual recording to FastAPI. A small LangGraph workflow calls Gemini once for transcription and qualitative scores, calculates transcript metrics in Python, and optionally compares a previous attempt. SQLAlchemy stores attempts using SQLite by default or a configured PostgreSQL database.
 
-## ✨ 30-Second Use Case
-1. **0–5s**: Open the practice screen.
-2. **5–10s**: Record a 60-second response to a scenario (e.g., "Explain a technical project to a non-technical person").
-3. **10–16s**: View deterministic metrics (WPM, filler words) and qualitative AI evaluation (Clarity, Structure).
-4. **16–21s**: Review the selected highest-impact focus area and a targeted next exercise.
-5. **21–26s**: Retry the exercise and view the comparison delta.
-6. **26–30s**: Your persistent progress profile updates based on evidence.
+The integration has known correctness failures:
 
-## 🧠 What Makes It Agentic?
-This is not a single LLM call. It is a stateful coaching workflow orchestrated by **LangGraph**. The system validates transcripts, computes metrics, evaluates rubrics, updates persistent skill profiles, and routes retry attempts conditionally based on previous session state.
+- The feedback component expects fields the API does not return and can crash on a successful response.
+- Duration is guessed from recording byte size, so WPM is unreliable.
+- Filler counts are saved incorrectly, producing misleading comparisons.
+- Every caller shares one demo user/session; profile updates are incomplete and do not drive personalized coaching.
+- Recording automatic-stop and resource cleanup have lifecycle defects.
+- The frontend production build and TypeScript check fail in the audited checkout.
 
-### System Architecture
+There is no validated evidence-based diagnosis, verified improvement, automated body-language assessment, or reliable multi-user history. Muted video is a human self-review tool. See the [audit](docs/current-state-audit.md) for affected files, reproduced failures and the proposed first corrective PR.
 
-```mermaid
-graph TD
-    UI[Frontend: React + Vite] -->|Audio Blob| API[Backend: FastAPI]
-    API -->|Init State| LG[LangGraph Orchestrator]
-    
-    subgraph Agentic Workflow
-        LG --> NodeEval[Evaluate Communication]
-        NodeEval -->|Transcript & Focus Area| NodeMetrics[Compute Deterministic Metrics]
-        NodeMetrics --> Condition{Attempt > 1?}
-        Condition -->|Yes| NodeCompare[Compare with Previous]
-        Condition -->|No| End[Return Analysis]
-        NodeCompare --> End
-    end
-    
-    NodeEval -.-> Gemini[Gemini 2.5 Flash]
-    End --> API
-    API --> DB[(SQLite/SQLAlchemy)]
-    API --> UI
-```
+## Intended direction
 
-## 🛡️ AI / Deterministic Boundaries
-- **Deterministic (Python)**: Audio duration, word count, words per minute (WPM), and filler word counts are calculated natively. The LLM is **never** asked to hallucinate these numbers.
-- **AI (Gemini via LangGraph)**: Qualitative rubrics (Clarity, Structure), feedback generation, and targeted exercise selection.
+Practice a technical explanation for a specified audience and goal → review → measure → evaluate → choose one supported weakness → practice a targeted intervention → retry → compare → update eligible skill evidence.
 
-## 🚀 Getting Started
+This is a roadmap, not a claim about current behavior. The [documentation index](docs/README.md) links the product scope, target architecture, domain model, testing/evaluation strategies, roadmap and decision records.
 
-### Prerequisites
-- Node.js (v18+)
-- Python 3.10+
-- Google Gemini API Key
+## Local development
 
-### Local Setup
+Use isolated local development only. The locked frontend tooling requires Node 20.19+ in the Node 20 series, or a compatible newer runtime. CI currently selects Python 3.10 and Node 20.x. Python dependencies are not locked, so setup is not yet fully reproducible.
 
-**1. Backend**
-```bash
+Backend, from the repository root:
+
+```sh
 cd backend
-python -m venv venv
-source venv/bin/activate # Windows: venv\Scripts\activate
+python -m venv .venv
+# Activate .venv with the command appropriate to your shell.
 pip install -r requirements.txt
-
-# Create environment variables
-cp .env.example .env
-# Edit .env and add your GEMINI_API_KEY
-
-# Run server
+# Copy .env.example to .env and set GEMINI_API_KEY there.
 uvicorn app.main:app --reload
 ```
 
-**2. Frontend**
-```bash
+Frontend, in another terminal from the repository root:
+
+```sh
 cd frontend
-npm install
+npm ci
 npm run dev
 ```
 
-## 🌍 Production Deployment
+The frontend uses `VITE_API_BASE_URL`, defaulting to `http://localhost:8000`. Keep `GEMINI_API_KEY` in the backend environment only. The backend accepts `DATABASE_URL` and `CORS_ORIGINS`; without a database URL it creates a local SQLite file. Starting these processes does not resolve the known recording, build or feedback failures.
 
-### Frontend (Vercel)
-The frontend is pre-configured for zero-config Vercel deployment via `frontend/vercel.json`.
-1. Import the repository into Vercel.
-2. Set the framework to `Vite`.
-3. Add `VITE_API_BASE_URL` pointing to your deployed backend.
+## Verification status
 
-### Backend (Render / Railway)
-The backend is ready for deployment on platforms like Render or Railway.
-- **Start Command**: `gunicorn app.main:app -w 4 -k uvicorn.workers.UvicornWorker`
-- **Environment Variables**: Set `GEMINI_API_KEY` and `CORS_ORIGINS`.
+The Phase 0 audit recorded **7 passing Python tests**: five database-configuration tests with mocked connections and two individual workflow-node tests. They do not cover the full HTTP/database/UI path or prove AI reliability. The frontend build failed on its Tailwind/PostCSS configuration; TypeScript reported JSX and Vite environment typing errors. No live model benchmark or deployed-system verification was performed.
 
-## 🔒 Security & Privacy
-- API keys remain strictly server-side.
-- Transcripts are explicitly delimited as untrusted data inputs.
-- Audio recordings are processed ephemerally and not logged.
-- The UI exposes no raw internal exceptions; errors are gracefully formatted.
+Existing checks, from the repository root:
 
-## 🧪 Evaluation & Testing
-- The LangGraph workflow is tested with deterministic Pytest fixtures.
-- Attempt routing and comparison nodes are verified offline using mocked AI schemas to guarantee state transitions.
+```sh
+python -m pytest tests/
+cd frontend
+npx tsc --noEmit
+npm run build
+```
 
-## 📌 Scope & Limitations
-- MVP focuses exclusively on Audio/Transcript analysis (no video body language evaluation yet) to guarantee high-confidence feedback.
-- Does not contain social features, communities, or generic "chat with AI" modes.
+Pytest must be installed separately; CI currently installs it explicitly. The [testing strategy](docs/testing-strategy.md) describes the missing coverage. Future normal CI must remain free of paid model calls.
 
-<br />
-<div align="center">
-  <i>Built with standard Software Engineering practices.</i>
-</div>
+## Privacy and deployment limitations
+
+Provider calls run on the backend, but currently receive the full audiovisual upload. Transcripts are persisted without a retention/deletion flow. There is no authentication or user isolation. Environment examples enable tracing; recording exclusion from traces and external provider retention have not been verified. Do not submit confidential recordings to this prototype.
+
+Vercel configuration files exist for the frontend and backend. They are not proof of a successful deployment. Database migrations, production recovery procedures, ownership controls and release verification are not implemented. No production-readiness or guaranteed-latency claim is made.
