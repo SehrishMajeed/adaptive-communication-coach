@@ -1,3 +1,4 @@
+import math
 import re
 from typing import Dict, Any, List
 
@@ -8,6 +9,11 @@ def calculate_deterministic_metrics(transcript: str, duration_seconds: float) ->
     Calculates deterministic speech metrics from a transcript.
     The LLM is NOT responsible for these counts.
     """
+    if not math.isfinite(duration_seconds) or duration_seconds <= 0:
+        raise ValueError("Duration must be finite and positive")
+    if not isinstance(transcript, str):
+        raise ValueError("Transcript must be text")
+
     # Clean transcript for counting
     words = re.findall(r'\b\w+\b', transcript.lower())
     word_count = len(words)

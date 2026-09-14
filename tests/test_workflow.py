@@ -1,42 +1,23 @@
 import pytest
-from backend.app.agent.state import CoachingState
-from backend.app.agent.nodes import compute_deterministic_metrics, compare_attempts_node
+from backend.app.agent.graph import build_coaching_graph
+from backend.app.services.llm_provider import ProviderFailure
 
-def test_deterministic_metrics():
-    state = CoachingState(
-        session_id="test",
-        user_id="test",
-        attempt_number=1,
-        scenario="Test",
-        transcript="Um, hello. I am like, happy.", 
-        duration_seconds=5.0,
-        deterministic_metrics=None,
-        rubric_evaluation=None,
-        focus_area=None,
-        next_exercise=None,
-        previous_attempt_metrics=None,
-        comparison_delta=None
-    )
-    result = compute_deterministic_metrics(state)
-    
+
+def test_compiled_graph(evaluator):
+    result = build_coaching_graph().invoke({
+        "scenario": "test", "audio_bytes": b"audio", "mime_type": "audio/wav", "duration_seconds": 5,
+    })
     assert result["deterministic_metrics"]["word_count"] == 6
     assert result["deterministic_metrics"]["total_fillers"] == 2
     assert result["deterministic_metrics"]["wpm"] == 72
-    
-def test_compare_attempts_node():
-    state = CoachingState(
-        session_id="test",
-        user_id="test",
-        attempt_number=2,
-        scenario="Test",
-        transcript="Hello. I am happy.", 
-        duration_seconds=5.0,
-        deterministic_metrics={"wpm": 48, "total_fillers": 0},
-        rubric_evaluation=None,
-        focus_area=None,
-        next_exercise=None,
-        previous_attempt_metrics={"wpm": 72, "total_fillers": 2},
-        comparison_delta=None
-    )
-    result = compare_attempts_node(state)
-    assert "reduced your filler words" in result["comparison_delta"]
+    assert "comparison_delta" not in result
+    evaluator.assert_called_once()
+
+
+def test_compiled_graph_stops_on_evaluation_failure(evaluator, monkeypatch):
+    evaluator.side_effect = ProviderFailure("failed")
+    calls = []
+    monkeypatch.setattr("backend.app.agent.nodes.calculate_deterministic_metrics", lambda *args: calls.append(args))
+    with pytest.raises(ProviderFailure):
+        build_coaching_graph().invoke({"scenario": "test", "audio_bytes": b"x", "mime_type": "audio/wav", "duration_seconds": 5})
+    assert calls == []

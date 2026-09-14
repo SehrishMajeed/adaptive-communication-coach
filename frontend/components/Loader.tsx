@@ -2,12 +2,9 @@
 import React, { useState, useEffect } from 'react';
 
 const messages = [
-    "Analyzing your posture and gestures...",
-    "Listening for vocal tone and clarity...",
-    "Checking your pacing and rhythm...",
-    "Counting filler words to help you improve...",
-    "Assessing your overall confidence...",
-    "Putting together your personalized feedback..."
+    "Preparing audio for evaluation…",
+    "Waiting for transcript and communication suggestions…",
+    "Your video stays local for self-review."
 ];
 
 const Loader: React.FC = () => {

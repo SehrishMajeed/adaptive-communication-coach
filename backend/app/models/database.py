@@ -1,6 +1,8 @@
 import os
-from sqlalchemy import create_engine, Column, Integer, String, Float, JSON
+from sqlalchemy import create_engine, Column, Integer, String, Float, JSON, inspect, text
+from sqlalchemy.exc import NoInspectionAvailable
 from sqlalchemy.orm import declarative_base, sessionmaker
+from sqlalchemy.schema import CreateColumn
 
 raw_db_url = os.environ.get("DATABASE_URL", "").strip()
 
@@ -68,8 +70,11 @@ class CoachingAttempt(Base):
     duration_seconds = Column(Float)
     
     # Metrics
+    word_count = Column(Integer, nullable=True)
+    duration_source = Column(String, default="pcm_samples")
     wpm = Column(Float, nullable=True)
     filler_words_count = Column(Integer, default=0)
+    filler_words_list = Column(JSON, default=list)
     
     # Evaluation
     clarity = Column(Float, nullable=True)
@@ -81,5 +86,29 @@ class CoachingAttempt(Base):
     weaknesses = Column(JSON, default=list)
     focus_area = Column(String, nullable=True)
 
+
+def ensure_attempt_measurement_columns(bind):
+    try:
+        inspector = inspect(bind)
+    except NoInspectionAvailable:
+        return
+
+    existing = {column["name"] for column in inspector.get_columns("coaching_attempts")}
+    required = [
+        Column("word_count", Integer, nullable=True),
+        Column("duration_source", String, nullable=True),
+        Column("filler_words_list", JSON, nullable=True),
+    ]
+    missing = [column for column in required if column.name not in existing]
+    if not missing:
+        return
+
+    with bind.begin() as connection:
+        for column in missing:
+            compiled = CreateColumn(column).compile(dialect=bind.dialect)
+            connection.execute(text(f"ALTER TABLE coaching_attempts ADD COLUMN {compiled}"))
+
+
 # Create tables safely
 Base.metadata.create_all(bind=engine)
+ensure_attempt_measurement_columns(engine)

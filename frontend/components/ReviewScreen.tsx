@@ -81,7 +81,7 @@ const ReviewScreen: React.FC<ReviewScreenProps> = ({ videoBlob, onAnalyze, onRes
         <p className="text-gray-300">{modeConfig[reviewMode].description}</p>
       </div>
 
-      {error && <div className="mt-4 p-4 bg-red-900/50 text-red-300 rounded-lg max-w-2xl w-full text-center">{error}</div>}
+      {error && <div role="alert" className="mt-4 p-4 bg-red-900/50 text-red-300 rounded-lg max-w-2xl w-full text-center">{error}</div>}
 
       <div className="mt-8 flex items-center space-x-4">
         <button onClick={onRestart} className="px-6 py-3 bg-gray-700 text-white font-bold rounded-lg hover:bg-gray-600 transition-colors">

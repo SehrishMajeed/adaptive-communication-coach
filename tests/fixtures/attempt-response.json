@@ -1,0 +1,36 @@
+{
+  "attempt_id": 1,
+  "measurements": {
+    "duration_seconds": 5,
+    "duration_source": "pcm_samples",
+    "word_count": 6,
+    "wpm": 72,
+    "total_fillers": 2,
+    "filler_words_list": [
+      {
+        "word": "um",
+        "count": 1
+      },
+      {
+        "word": "like",
+        "count": 1
+      }
+    ]
+  },
+  "evaluation": {
+    "transcript": "Um, hello. I am like, happy.",
+    "clarity": 7,
+    "structure": 6,
+    "conciseness": 5,
+    "audience_awareness": 8,
+    "strengths": [
+      "Clear introduction"
+    ],
+    "weaknesses": [
+      "Explain the benefit"
+    ],
+    "recommended_focus": [
+      "clarity"
+    ]
+  }
+}

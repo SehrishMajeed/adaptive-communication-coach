@@ -1,127 +1,76 @@
-<div align="center">
-  <br />
-  <img src="https://raw.githubusercontent.com/lucide-icons/lucide/main/icons/mic.svg" alt="Logo" width="80" height="80">
-  <h1 align="center">Adaptive Communication Intelligence Coach</h1>
-  <p align="center">
-    <strong>An evidence-based, agentic communication coaching platform.</strong>
-    <br />
-    <br />
-    <a href="https://github.com/SehrishMajeed/adaptive-communication-coach/issues">Report Bug</a>
-    ·
-    <a href="https://github.com/SehrishMajeed/adaptive-communication-coach/issues">Request Feature</a>
-  </p>
-</div>
+# Adaptive Communication Coach
 
-<div align="center">
-  <img src="https://img.shields.io/badge/React-19.1.1-61DAFB?style=for-the-badge&logo=react&logoColor=black" alt="React" />
-  <img src="https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white" alt="Tailwind CSS" />
-  <img src="https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white" alt="FastAPI" />
-  <img src="https://img.shields.io/badge/LangGraph-FF4F00?style=for-the-badge&logo=ycombinator&logoColor=white" alt="LangGraph" />
-  <img src="https://img.shields.io/badge/Gemini_2.5-4285F4?style=for-the-badge&logo=google&logoColor=white" alt="Gemini" />
-</div>
-<br />
+**Prototype — not production-ready.** Practice a technical explanation, review the recording locally, and request audio-based AI suggestions. Personalized coaching and verified improvement are not implemented.
 
-## 📖 The Problem
-People practice speaking repeatedly without knowing what exactly is weak, what they should improve first, or whether they actually improved. Typical AI feedback tools provide one generic response and the conversation ends. There is no evidence, no retry loop, and no persistence.
+## Current flow
 
-**Aura Coach solves this.** It provides deterministic metrics, qualitative AI evaluation, and a cyclical retry loop based on targeted focus areas.
+1. Record a technical project explanation for a nontechnical listener (1–60 seconds).
+2. Review full video/audio, muted video, or audio-only playback. These are human self-review modes.
+3. Request feedback. A separate audio recording is decoded in the browser and encoded as mono PCM16 WAV. Video stays local.
+4. FastAPI validates WAV format, sample frames, size and duration, and cross-checks client monotonic capture time. Duration and WPM use decoded sample frames, not compressed file size or an LLM estimate.
+5. Gemini returns a bounded structured transcript/rubric result. Python counts transcript words and filler candidates. The API atomically saves the attempt and returns a validated response; React validates it again before rendering.
 
-## ✨ 30-Second Use Case
-1. **0–5s**: Open the practice screen.
-2. **5–10s**: Record a 60-second response to a scenario (e.g., "Explain a technical project to a non-technical person").
-3. **10–16s**: View deterministic metrics (WPM, filler words) and qualitative AI evaluation (Clarity, Structure).
-4. **16–21s**: Review the selected highest-impact focus area and a targeted next exercise.
-5. **21–26s**: Retry the exercise and view the comparison delta.
-6. **26–30s**: Your persistent progress profile updates based on evidence.
+Each submission is stored independently. There is no history lookup, shared-session comparison or long-term profile update. A suggested focus is not a verified highest-impact diagnosis. Counts depend on transcript fidelity; the prototype does not validate evidence or independently establish speech accuracy.
 
-## 🧠 What Makes It Agentic?
-This is not a single LLM call. It is a stateful coaching workflow orchestrated by **LangGraph**. The system validates transcripts, computes metrics, evaluates rubrics, updates persistent skill profiles, and routes retry attempts conditionally based on previous session state.
+See the [documentation index](docs/README.md) for the target architecture and [historical audit with implementation status](docs/current-state-audit.md). Future capabilities are explicitly separated from this working slice.
 
-### System Architecture
+## Local development
 
-```mermaid
-graph TD
-    UI[Frontend: React + Vite] -->|Audio Blob| API[Backend: FastAPI]
-    API -->|Init State| LG[LangGraph Orchestrator]
-    
-    subgraph Agentic Workflow
-        LG --> NodeEval[Evaluate Communication]
-        NodeEval -->|Transcript & Focus Area| NodeMetrics[Compute Deterministic Metrics]
-        NodeMetrics --> Condition{Attempt > 1?}
-        Condition -->|Yes| NodeCompare[Compare with Previous]
-        Condition -->|No| End[Return Analysis]
-        NodeCompare --> End
-    end
-    
-    NodeEval -.-> Gemini[Gemini 2.5 Flash]
-    End --> API
-    API --> DB[(SQLite/SQLAlchemy)]
-    API --> UI
-```
+CI uses Python 3.10 and Node 22.22.2. The current frontend test dependencies require Node 22.22.2+, a compatible Node 24 release (24.15+), or Node 26+. Python runtime dependencies are not locked yet.
 
-## 🛡️ AI / Deterministic Boundaries
-- **Deterministic (Python)**: Audio duration, word count, words per minute (WPM), and filler word counts are calculated natively. The LLM is **never** asked to hallucinate these numbers.
-- **AI (Gemini via LangGraph)**: Qualitative rubrics (Clarity, Structure), feedback generation, and targeted exercise selection.
+Backend, from the repository root:
 
-## 🚀 Getting Started
-
-### Prerequisites
-- Node.js (v18+)
-- Python 3.10+
-- Google Gemini API Key
-
-### Local Setup
-
-**1. Backend**
-```bash
+```sh
 cd backend
-python -m venv venv
-source venv/bin/activate # Windows: venv\Scripts\activate
-pip install -r requirements.txt
-
-# Create environment variables
-cp .env.example .env
-# Edit .env and add your GEMINI_API_KEY
-
-# Run server
+python -m venv .venv
+# Activate .venv using the command appropriate to your shell.
+pip install -r requirements-dev.txt
+# Copy .env.example to .env; set GEMINI_API_KEY on the backend only.
 uvicorn app.main:app --reload
 ```
 
-**2. Frontend**
-```bash
+Frontend, in another terminal from the repository root:
+
+```sh
 cd frontend
-npm install
+npm ci
 npm run dev
 ```
 
-## 🌍 Production Deployment
+`VITE_API_BASE_URL` defaults to `http://localhost:8000`. `CORS_ORIGINS` defaults to `http://localhost:5173`; configure the actual frontend origin when needed. `DATABASE_URL` defaults to local SQLite. Use localhost or HTTPS for camera/microphone access. There are no frontend provider keys.
 
-### Frontend (Vercel)
-The frontend is pre-configured for zero-config Vercel deployment via `frontend/vercel.json`.
-1. Import the repository into Vercel.
-2. Set the framework to `Vite`.
-3. Add `VITE_API_BASE_URL` pointing to your deployed backend.
+## Verification
 
-### Backend (Render / Railway)
-The backend is ready for deployment on platforms like Render or Railway.
-- **Start Command**: `gunicorn app.main:app -w 4 -k uvicorn.workers.UvicornWorker`
-- **Environment Variables**: Set `GEMINI_API_KEY` and `CORS_ORIGINS`.
+From the repository root:
 
-## 🔒 Security & Privacy
-- API keys remain strictly server-side.
-- Transcripts are explicitly delimited as untrusted data inputs.
-- Audio recordings are processed ephemerally and not logged.
-- The UI exposes no raw internal exceptions; errors are gracefully formatted.
+```sh
+python -m pytest tests/
+cd frontend
+npm run typecheck
+npm test
+npm run build
+```
 
-## 🧪 Evaluation & Testing
-- The LangGraph workflow is tested with deterministic Pytest fixtures.
-- Attempt routing and comparison nodes are verified offline using mocked AI schemas to guarantee state transitions.
+Local verification on Python 3.14.4 / Node 26.4.0: **78 backend tests and 21 frontend tests pass**, and TypeScript/production build pass. Backend tests include actual multipart HTTP requests, real isolated SQLite round-trips and compiled workflow paths with a mocked provider. A shared response fixture is checked by both backend and frontend tests. The SDK emits one deprecation warning on Python 3.14. These are local results, not a claim that remote CI has run.
 
-## 📌 Scope & Limitations
-- MVP focuses exclusively on Audio/Transcript analysis (no video body language evaluation yet) to guarantee high-confidence feedback.
-- Does not contain social features, communities, or generic "chat with AI" modes.
+Normal CI uses mocked providers and no paid model calls. Live Gemini behavior, real-device recording compatibility, production deployment and model reliability benchmarks have not been verified.
 
-<br />
-<div align="center">
-  <i>Built with standard Software Engineering practices.</i>
-</div>
+## Manual verification
+
+1. Start both services and open the frontend. Allow camera and microphone access.
+2. Record at least five seconds; stop manually. Confirm the camera/microphone indicators turn off and all three replay modes work.
+3. Choose Get AI Feedback. In browser Network tools, verify multipart fields contain only `audio` (`audio/wav`) and `duration_seconds`; no video field or video payload is uploaded. With a valid backend key, confirm transcript, four rubric labels, duration and counts render.
+4. Start another recording and let it stop automatically after 60 seconds. Confirm a single transition to review and released media resources.
+5. Deny permissions, then use Try Again. Stop the backend and request feedback; verify the error leaves the local recording reviewable and retryable. Restore it and retry.
+6. Check the database: each successful submission has its own storage session and attempt number 1. Response-critical measurement evidence can be reconstructed from the saved attempt; learner profiles remain unchanged.
+
+These steps are a manual checklist, not reported completed testing.
+
+## Limits and privacy
+
+- The browser must support camera/microphone capture, both recording formats and decoding its chosen audio format. Decode failure is recoverable and leaves local review available. Real Safari/Firefox/Chrome device coverage remains to be established.
+- The analysis endpoint accepts mono PCM16 WAV only, 1–65 seconds, up to 16 MiB, with capture/sample durations within 1.5 seconds. The extra five seconds tolerate timer/codec overhead, not a new duration option. Other media is rejected before calling Gemini.
+- Provider requests have a 45-second timeout with one SDK attempt; browser requests abort after 60 seconds. Disconnect/retry can still result in another saved attempt because request idempotency is not implemented.
+- Raw media is not saved in database columns; upload handling may spool temporary files. Graph tracing is disabled for this path and in environment examples. External provider retention is a separate, unverified boundary.
+- Transcripts/results are persisted without authentication, deletion or retention policy. Storage-session UUIDs are not user ownership. Do not submit confidential material or expose this as a multi-user service.
+- SQLite/PostgreSQL configuration and existing deployment files remain, but migrations, global request/rate limits, durable job recovery, deployment smoke and backups are not implemented. Multipart transport limits require a production boundary; application size validation occurs after multipart parsing.

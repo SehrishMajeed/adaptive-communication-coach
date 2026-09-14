@@ -6,11 +6,12 @@ import RecordingScreen from './components/RecordingScreen';
 import ReviewScreen from './components/ReviewScreen';
 import FeedbackScreen from './components/FeedbackScreen';
 import Loader from './components/Loader';
-import { analyzeVideo } from './services/api';
+import { analyzeRecording } from './services/api';
+import type { Recording } from './services/recording';
 
 const App: React.FC = () => {
   const [appState, setAppState] = useState<AppState>(AppState.WELCOME);
-  const [videoBlob, setVideoBlob] = useState<Blob | null>(null);
+  const [recording, setRecording] = useState<Recording | null>(null);
   const [feedback, setFeedback] = useState<AIFeedback | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -18,33 +19,33 @@ const App: React.FC = () => {
     setAppState(AppState.RECORDING);
   };
 
-  const handleRecordingComplete = (blob: Blob) => {
-    setVideoBlob(blob);
+  const handleRecordingComplete = (result: Recording) => {
+    setRecording(result);
     setAppState(AppState.REVIEW);
   };
 
   const handleAnalysis = useCallback(async () => {
-    if (!videoBlob) return;
+    if (!recording) return;
 
     setAppState(AppState.ANALYZING);
     setError(null);
     setFeedback(null);
 
     try {
-      const result = await analyzeVideo(videoBlob);
+      const result = await analyzeRecording(recording);
       setFeedback(result);
       setAppState(AppState.FEEDBACK);
     } catch (err) {
-      console.error(err);
+
       const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred.';
       setError(`Failed to get AI feedback. ${errorMessage}`);
       setAppState(AppState.REVIEW); // Go back to review screen on error
     }
-  }, [videoBlob]);
+  }, [recording]);
 
   const handleRestart = () => {
     setAppState(AppState.WELCOME);
-    setVideoBlob(null);
+    setRecording(null);
     setFeedback(null);
     setError(null);
   };
@@ -56,7 +57,7 @@ const App: React.FC = () => {
       case AppState.RECORDING:
         return <RecordingScreen onRecordingComplete={handleRecordingComplete} />;
       case AppState.REVIEW:
-        return <ReviewScreen videoBlob={videoBlob!} onAnalyze={handleAnalysis} error={error} onRestart={handleRestart} />;
+        return <ReviewScreen videoBlob={recording!.videoBlob} onAnalyze={handleAnalysis} error={error} onRestart={handleRestart} />;
       case AppState.ANALYZING:
         return <Loader />;
       case AppState.FEEDBACK:
