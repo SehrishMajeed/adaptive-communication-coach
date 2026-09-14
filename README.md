@@ -51,7 +51,7 @@ npm test
 npm run build
 ```
 
-Local verification on Python 3.14.4 / Node 26.4.0: **77 backend tests and 21 frontend tests pass**, and TypeScript/production build pass. Backend tests include actual multipart HTTP requests, real isolated SQLite round-trips and compiled workflow paths with a mocked provider. A shared response fixture is checked by both backend and frontend tests. The SDK emits one deprecation warning on Python 3.14. These are local results, not a claim that remote CI has run.
+Local verification on Python 3.14.4 / Node 26.4.0: **78 backend tests and 21 frontend tests pass**, and TypeScript/production build pass. Backend tests include actual multipart HTTP requests, real isolated SQLite round-trips and compiled workflow paths with a mocked provider. A shared response fixture is checked by both backend and frontend tests. The SDK emits one deprecation warning on Python 3.14. These are local results, not a claim that remote CI has run.
 
 Normal CI uses mocked providers and no paid model calls. Live Gemini behavior, real-device recording compatibility, production deployment and model reliability benchmarks have not been verified.
 
