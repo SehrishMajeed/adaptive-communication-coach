@@ -1,5 +1,7 @@
 # Current-state audit
 
+> Historical baseline: findings below describe commit `5b3ada5`. The first engineering PR addresses a subset; see the [implementation status](#first-engineering-pr-status) and [current README](../README.md) before treating a baseline defect as current behavior.
+
 Audited 2026-09-14 at commit `5b3ada5aa3f5d0538f22c0055ae8a77931826572`. This phase changes documentation only. Findings refer to that application snapshot. Severity follows the requested definition: P0 includes currently broken, incorrect, or misleading behavior; it does not imply every finding is a security emergency.
 
 ## Coverage and evidence
@@ -161,3 +163,67 @@ No authentication/session redesign, database migration or historical backfill; n
 This one PR does not resolve all P0s. Owned user/session isolation, concurrency/idempotency, durable constraints, evidence eligibility and full privacy controls remain release blockers assigned in the [roadmap](roadmap.md). Do not interpret a corrected local demonstration as production readiness. The proposed [target architecture](target-architecture.md) is the longer-term destination, not additional first-PR scope.
 
 Delete rather than expand: unsupported feedback categories and loader claims, fabricated fallback scores/dead response branches, byte-duration heuristic, duplicate unused profile updater after policy consolidation, stale frontend setup instructions, and empty/unused config/import scaffolding. Preserve self-review, pure functions, provider isolation, graph seam, and SQLAlchemy. Do not delete old user data as a cleanup shortcut.
+
+## First engineering PR status
+
+Implemented on `codex/trustworthy-attempt-foundation`, based on the Phase 0 documentation commit. This is an isolated attempt path, not Phase 2 or adaptive learning.
+
+- Fixed capture lifecycle, separate audio recording and local Three-Lens Review. Browser decoding produces mono PCM16 WAV; the server validates sample data and derives duration without ffmpeg or byte-size guessing.
+- Added explicit request/success/error schemas and frontend runtime validation; removed unsupported confidence/engagement/visual categories and fabricated fallback scores.
+- Fixed the explicit `total_fillers` → database `filler_words_count` mapping and verified returned counts against real saved rows.
+- Removed shared-history lookup, retry comparisons and profile mutation from the live path. Deleted the unused duplicate profile updater. Each upload gets a storage session without an authenticated owner; that is isolation of processing, not an identity system.
+- Added safe validation/provider/storage errors, disabled raw graph tracing on the request path, repaired the Tailwind adapter/type declarations and added offline CI gates.
+
+Verification: 77 backend tests and 21 frontend tests pass locally; TypeScript and production build pass. One Google SDK deprecation warning appears on Python 3.14.4. CI targets Python 3.10 / Node 22.22.2; remote CI has not been run. No live Gemini, real camera/codec matrix, deployed-system or model-quality experiment was performed. See the [manual verification steps](../README.md#manual-verification) and [known limitations](../README.md#limits-and-privacy).
+
+The graph is intentionally linear in this PR. Evidence validation, ownership, migrations, idempotency, long-term skill state, target-outcome comparison and production transport limits remain future work. The historical tables and original claim ledger above are retained as audit evidence, not overwritten to hide defects.
+
+### Implementation file manifest
+
+Paths below list changes relative to the documentation commit. Deletions are identified explicitly.
+- [.env.example](../.env.example)
+- [.github/workflows/ci.yml](../.github/workflows/ci.yml)
+- [README.md](../README.md)
+- [backend/.env.example](../backend/.env.example)
+- [backend/app/agent/graph.py](../backend/app/agent/graph.py)
+- [backend/app/agent/nodes.py](../backend/app/agent/nodes.py)
+- [backend/app/agent/state.py](../backend/app/agent/state.py)
+- [backend/app/domain/evaluation.py](../backend/app/domain/evaluation.py)
+- [backend/app/domain/metrics.py](../backend/app/domain/metrics.py)
+- `backend/app/domain/skill_profile.py` — removed duplicate, unused profile updater.
+- [backend/app/main.py](../backend/app/main.py)
+- [backend/app/schemas/attempt.py](../backend/app/schemas/attempt.py)
+- [backend/app/services/llm_provider.py](../backend/app/services/llm_provider.py)
+- [backend/app/services/media.py](../backend/app/services/media.py)
+- [backend/requirements-dev.txt](../backend/requirements-dev.txt)
+- [docs/current-state-audit.md](../docs/current-state-audit.md)
+- [frontend/App.tsx](../frontend/App.tsx)
+- [frontend/README.md](../frontend/README.md)
+- [frontend/components/FeedbackScreen.test.tsx](../frontend/components/FeedbackScreen.test.tsx)
+- [frontend/components/FeedbackScreen.tsx](../frontend/components/FeedbackScreen.tsx)
+- [frontend/components/Loader.tsx](../frontend/components/Loader.tsx)
+- [frontend/components/RecordingScreen.test.tsx](../frontend/components/RecordingScreen.test.tsx)
+- [frontend/components/RecordingScreen.tsx](../frontend/components/RecordingScreen.tsx)
+- [frontend/components/ReviewScreen.tsx](../frontend/components/ReviewScreen.tsx)
+- [frontend/components/WelcomeScreen.tsx](../frontend/components/WelcomeScreen.tsx)
+- [frontend/index.css](../frontend/index.css)
+- [frontend/metadata.json](../frontend/metadata.json)
+- [frontend/package-lock.json](../frontend/package-lock.json)
+- [frontend/package.json](../frontend/package.json)
+- [frontend/postcss.config.js](../frontend/postcss.config.js)
+- [frontend/services/api.test.ts](../frontend/services/api.test.ts)
+- [frontend/services/api.ts](../frontend/services/api.ts)
+- [frontend/services/audio.test.ts](../frontend/services/audio.test.ts)
+- [frontend/services/audio.ts](../frontend/services/audio.ts)
+- [frontend/services/recording.test.ts](../frontend/services/recording.test.ts)
+- [frontend/services/recording.ts](../frontend/services/recording.ts)
+- [frontend/test/setup.ts](../frontend/test/setup.ts)
+- [frontend/types.ts](../frontend/types.ts)
+- [frontend/vite-env.d.ts](../frontend/vite-env.d.ts)
+- [frontend/vitest.config.ts](../frontend/vitest.config.ts)
+- [tests/conftest.py](../tests/conftest.py)
+- [tests/fixtures/attempt-response.json](../tests/fixtures/attempt-response.json)
+- [tests/test_attempt_api.py](../tests/test_attempt_api.py)
+- [tests/test_evaluation.py](../tests/test_evaluation.py)
+- [tests/test_metrics.py](../tests/test_metrics.py)
+- [tests/test_workflow.py](../tests/test_workflow.py)
