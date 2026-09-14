@@ -25,6 +25,17 @@ class Measurements(BaseModel):
     filler_words_list: list[FillerCount]
 
 
+def measurements_from_attempt(attempt) -> Measurements:
+    return Measurements(
+        duration_seconds=attempt.duration_seconds,
+        duration_source=attempt.duration_source,
+        word_count=attempt.word_count,
+        wpm=attempt.wpm,
+        total_fillers=attempt.filler_words_count,
+        filler_words_list=attempt.filler_words_list or [],
+    )
+
+
 class AttemptResponse(BaseModel):
     model_config = ConfigDict(extra="forbid")
     attempt_id: int = Field(ge=1)

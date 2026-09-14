@@ -62,7 +62,7 @@ Normal CI uses mocked providers and no paid model calls. Live Gemini behavior, r
 3. Choose Get AI Feedback. In browser Network tools, verify multipart fields contain only `audio` (`audio/wav`) and `duration_seconds`; no video field or video payload is uploaded. With a valid backend key, confirm transcript, four rubric labels, duration and counts render.
 4. Start another recording and let it stop automatically after 60 seconds. Confirm a single transition to review and released media resources.
 5. Deny permissions, then use Try Again. Stop the backend and request feedback; verify the error leaves the local recording reviewable and retryable. Restore it and retry.
-6. Check the database: each successful submission has its own storage session and attempt number 1. Displayed filler totals match `filler_words_count`; learner profiles remain unchanged.
+6. Check the database: each successful submission has its own storage session and attempt number 1. Response-critical measurement evidence can be reconstructed from the saved attempt; learner profiles remain unchanged.
 
 These steps are a manual checklist, not reported completed testing.
 

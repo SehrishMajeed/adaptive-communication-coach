@@ -15,7 +15,7 @@ load_dotenv()
 
 from .agent.graph import build_coaching_graph
 from .models.database import CoachingAttempt, CoachingSession, SessionLocal
-from .schemas.attempt import AttemptRequest, AttemptResponse, ErrorResponse, Measurements
+from .schemas.attempt import AttemptRequest, AttemptResponse, ErrorResponse, Measurements, measurements_from_attempt
 from .services.llm_provider import ProviderFailure
 from .services.media import InvalidMedia, MAX_AUDIO_BYTES, validate_audio
 
@@ -83,7 +83,9 @@ def process_attempt(
         attempt = CoachingAttempt(
             session_id=session_id, attempt_number=1,
             transcript=evaluation.transcript, duration_seconds=metrics.duration_seconds,
+            word_count=metrics.word_count, duration_source=metrics.duration_source,
             wpm=metrics.wpm, filler_words_count=metrics.total_fillers,
+            filler_words_list=[item.model_dump() for item in metrics.filler_words_list],
             clarity=evaluation.clarity, structure=evaluation.structure,
             conciseness=evaluation.conciseness, audience_awareness=evaluation.audience_awareness,
             strengths=evaluation.strengths, weaknesses=evaluation.weaknesses,
@@ -91,7 +93,7 @@ def process_attempt(
         )
         db.add(attempt)
         db.flush()
-        response = AttemptResponse(attempt_id=attempt.id, measurements=metrics, evaluation=evaluation)
+        response = AttemptResponse(attempt_id=attempt.id, measurements=measurements_from_attempt(attempt), evaluation=evaluation)
         db.commit()
         return response
     except (ProviderFailure, ValidationError):

@@ -170,13 +170,13 @@ Implemented on `codex/trustworthy-attempt-foundation`, based on the Phase 0 docu
 
 - Fixed capture lifecycle, separate audio recording and local Three-Lens Review. Browser decoding produces mono PCM16 WAV; the server validates sample data and derives duration without ffmpeg or byte-size guessing.
 - Added explicit request/success/error schemas and frontend runtime validation; removed unsupported confidence/engagement/visual categories and fabricated fallback scores.
-- Fixed the explicit `total_fillers` → database `filler_words_count` mapping and verified returned counts against real saved rows.
+- Persisted the response-critical measurement contract (`word_count`, `duration_seconds`, `duration_source`, `wpm`, total filler count and filler details) and verified reconstruction from a committed row in a new session.
 - Removed shared-history lookup, retry comparisons and profile mutation from the live path. Deleted the unused duplicate profile updater. Each upload gets a storage session without an authenticated owner; that is isolation of processing, not an identity system.
 - Added safe validation/provider/storage errors, disabled raw graph tracing on the request path, repaired the Tailwind adapter/type declarations and added offline CI gates.
 
-Verification: 77 backend tests and 21 frontend tests pass locally; TypeScript and production build pass. One Google SDK deprecation warning appears on Python 3.14.4. CI targets Python 3.10 / Node 22.22.2; remote CI has not been run. No live Gemini, real camera/codec matrix, deployed-system or model-quality experiment was performed. See the [manual verification steps](../README.md#manual-verification) and [known limitations](../README.md#limits-and-privacy).
+Verification: 78 backend tests and 21 frontend tests pass locally; TypeScript and production build pass. One Google SDK deprecation warning appears on Python 3.14.4. CI targets Python 3.10 / Node 22.22.2; remote CI has not been run. No live Gemini, real camera/codec matrix, deployed-system or model-quality experiment was performed. See the [manual verification steps](../README.md#manual-verification) and [known limitations](../README.md#limits-and-privacy).
 
-The graph is intentionally linear in this PR. Evidence validation, ownership, migrations, idempotency, long-term skill state, target-outcome comparison and production transport limits remain future work. The historical tables and original claim ledger above are retained as audit evidence, not overwritten to hide defects.
+The graph is intentionally linear in this PR. Evidence validation, ownership, full migration tooling, idempotency, long-term skill state, target-outcome comparison and production transport limits remain future work. The historical tables and original claim ledger above are retained as audit evidence, not overwritten to hide defects. A narrow startup schema-compatibility check adds missing measurement columns for existing local databases; it is not a full migration framework.
 
 ### Implementation file manifest
 

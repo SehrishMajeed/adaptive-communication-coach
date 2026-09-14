@@ -2,8 +2,12 @@ import io
 import wave
 from unittest.mock import patch
 import pytest
+from sqlalchemy import create_engine, text
 from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.orm import sessionmaker
 from backend.app.models.database import CoachingAttempt, CoachingSession, UserProfile
+from backend.app.models.database import ensure_attempt_measurement_columns
+from backend.app.schemas.attempt import measurements_from_attempt
 from backend.app.services.llm_provider import ProviderFailure
 from backend.app.services.media import validate_audio, InvalidMedia, MAX_AUDIO_BYTES
 
@@ -30,7 +34,10 @@ def test_http_contract_and_persistence(client, database, evaluator, contract):
     assert response.json() == contract
     database.expire_all()
     saved = database.query(CoachingAttempt).one()
+    assert saved.word_count == response.json()["measurements"]["word_count"] == 6
+    assert saved.duration_source == response.json()["measurements"]["duration_source"] == "pcm_samples"
     assert saved.filler_words_count == response.json()["measurements"]["total_fillers"] == 2
+    assert saved.filler_words_list == response.json()["measurements"]["filler_words_list"]
     assert saved.duration_seconds == 5
     assert saved.wpm == 72
     assert database.query(UserProfile).count() == 0
@@ -38,6 +45,27 @@ def test_http_contract_and_persistence(client, database, evaluator, contract):
     assert mime == "audio/wav"
     assert audio == wav()
     assert "non-technical" in scenario
+
+
+def test_measurements_round_trip_from_committed_database_row(client, database, evaluator, contract):
+    result = submit(client)
+    assert result.status_code == 200
+
+    attempt_id = result.json()["attempt_id"]
+    database.close()
+    factory = sessionmaker(bind=database.get_bind())
+    with factory() as fresh:
+        loaded = fresh.get(CoachingAttempt, attempt_id)
+        reconstructed = measurements_from_attempt(loaded).model_dump()
+        assert reconstructed == contract["measurements"]
+        assert loaded.transcript == contract["evaluation"]["transcript"]
+        assert loaded.clarity == contract["evaluation"]["clarity"]
+        assert loaded.structure == contract["evaluation"]["structure"]
+        assert loaded.conciseness == contract["evaluation"]["conciseness"]
+        assert loaded.audience_awareness == contract["evaluation"]["audience_awareness"]
+        assert loaded.strengths == contract["evaluation"]["strengths"]
+        assert loaded.weaknesses == contract["evaluation"]["weaknesses"]
+        assert loaded.focus_area == contract["evaluation"]["recommended_focus"][0]
 
 
 def test_repeat_uploads_never_read_or_update_shared_profile(client, database, evaluator):
@@ -146,3 +174,30 @@ def test_openapi_documents_success_and_error_contracts(client):
     assert responses["200"]["content"]["application/json"]["schema"]["$ref"].endswith("AttemptResponse")
     for status in ("422", "502", "503"):
         assert responses[status]["content"]["application/json"]["schema"]["$ref"].endswith("ErrorResponse")
+
+
+def test_schema_compatibility_adds_measurement_columns_to_existing_attempt_table():
+    engine = create_engine("sqlite://")
+    with engine.begin() as connection:
+        connection.execute(text("""
+            CREATE TABLE coaching_attempts (
+                id INTEGER PRIMARY KEY,
+                session_id VARCHAR,
+                attempt_number INTEGER,
+                transcript VARCHAR,
+                duration_seconds FLOAT,
+                wpm FLOAT,
+                filler_words_count INTEGER,
+                clarity FLOAT,
+                structure FLOAT,
+                conciseness FLOAT,
+                audience_awareness FLOAT,
+                strengths JSON,
+                weaknesses JSON,
+                focus_area VARCHAR
+            )
+        """))
+    ensure_attempt_measurement_columns(engine)
+    with engine.connect() as connection:
+        columns = {row[1] for row in connection.execute(text("PRAGMA table_info(coaching_attempts)"))}
+    assert {"word_count", "duration_source", "filler_words_list"}.issubset(columns)
