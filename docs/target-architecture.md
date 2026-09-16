@@ -6,19 +6,20 @@ Status: target design with current implementation notes. This is the canonical b
 
 ```mermaid
 flowchart TD
-  Browser[React capture: camera and microphone] --> Review[Local replay modes]
-  Review -->|Separate audio-only WAV + duration| API[FastAPI: latest attempt endpoint]
+  Browser[React capture: camera and microphone] --> Setup[Scenario, audience and goal setup]
+  Setup --> Review[Local replay modes]
+  Review -->|Separate audio-only WAV + duration + idempotency key| API[FastAPI: session-scoped attempt endpoint]
   API --> Validate[Validate WAV, size, sample duration and capture duration]
   Validate --> Eval[LangGraph evaluate node]
   Eval --> Gemini[Gemini transcription and rubric in one call]
   Gemini --> Metrics[Python transcript metrics]
-  Metrics --> Save[Route saves independent attempt]
+  Metrics --> Save[Persist attempt, evaluation, intervention, comparison]
   Save --> DB[(SQLAlchemy / SQLite or PostgreSQL)]
-  Save --> Response[Validated response contract]
-  Response --> FrontendCompare[In-memory retry comparison in frontend]
+  Save --> Response[Validated response contract with workflow route]
+  Response --> FrontendDisplay[Frontend renders evidence, comparison and session history]
 ```
 
-This is a modular prototype in one backend process. The graph neither validates evidence nor updates the profile. There is no worker, object store or full authentication layer. Phase 4 now includes durable owned sessions, migrations, session-scoped attempts, backend-owned retry comparison and an owner-scoped session attempt history endpoint. Manual Chrome/DevTools verification remains required before claiming the live privacy path is fully verified.
+This is a modular prototype in one backend process. Phase 2–5C implemented durable owned sessions, Alembic migrations, session-scoped idempotent attempts, evidence-grounded evaluation with abstention, coaching workflow routes, persisted interventions, backend-owned retry comparison, owner-scoped session attempt history, and context-visible practice setup. Manual Chrome/DevTools verification remains required before claiming the live privacy path is fully verified.
 
 ## Target: one modular application
 

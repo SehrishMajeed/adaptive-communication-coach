@@ -76,7 +76,8 @@ If the model name, temperature, prompt, schema, timeout, retry policy, or provid
 - Current known non-production facts:
   - live Gemini behavior is not manually verified in this workspace;
   - browser/device recording still needs manual Chrome verification;
-  - authentication, ownership, migrations, deletion, retention policy, and adaptive coaching are not implemented.
+  - anonymous device-scoped ownership, Alembic migrations, session-scoped idempotency, coaching workflow routes and evidence-grounded evaluation are implemented;
+  - authenticated identity, deletion, retention policy, rate limits and production deployment are not implemented.
 
 ### 7. Cryptographic Receipts and Hashes
 
