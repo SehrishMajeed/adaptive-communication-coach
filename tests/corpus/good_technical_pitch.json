@@ -1,0 +1,9 @@
+{
+  "id": "good_technical_pitch",
+  "scenario": "Explain your use of WebSockets to a non-technical PM in 60 seconds.",
+  "audio_path": "test_audio.wav",
+  "expected": {
+    "evaluator_status": "completed",
+    "recommended_focus": "clarity"
+  }
+}
