@@ -18,6 +18,8 @@
     ]
   },
   "evaluation": {
+    "evaluator_status": "completed",
+    "abstention_reason": null,
     "transcript": "Um, hello. I am like, happy.",
     "clarity": 7,
     "structure": 6,
@@ -31,6 +33,20 @@
     ],
     "recommended_focus": [
       "clarity"
+    ],
+    "evidence": [
+      {
+        "skill": "clarity",
+        "quote": "Um, hello.",
+        "note": "The opening is understandable but does not yet name the project or listener benefit."
+      }
     ]
+  },
+  "provenance": {
+    "prompt_version": "evaluation-audio-v2",
+    "model_id": "gemini-2.5-flash",
+    "schema_version": "attempt-response-v1",
+    "rubric_version": "technical-explanation-v1",
+    "metric_version": "speech-metrics-v1"
   }
 }

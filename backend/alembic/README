@@ -1,0 +1,5 @@
+Alembic migration environment for the Adaptive Communication Coach backend.
+
+Use from the repository root:
+
+  alembic upgrade head

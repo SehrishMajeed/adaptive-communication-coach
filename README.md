@@ -2,6 +2,10 @@
 
 **Prototype — not production-ready.** Practice a technical explanation, review the recording locally, and request audio-based AI suggestions. Personalized coaching and verified improvement are not implemented.
 
+## Portfolio positioning
+
+This project is intentionally shaped as a practical AI engineering product: a Python/FastAPI backend, React/Vite frontend, Gemini provider boundary, structured AI output validation, deterministic measurement code, privacy-aware media handling, and an in-memory retry comparison loop. It is not yet an agentic product; the roadmap points toward agentic coaching once durable interventions, ownership, evidence validation, and profile-safe comparison are implemented.
+
 ## Current flow
 
 1. Record a technical project explanation for a nontechnical listener (1–60 seconds).
@@ -10,9 +14,13 @@
 4. FastAPI validates WAV format, sample frames, size and duration, and cross-checks client monotonic capture time. Duration and WPM use decoded sample frames, not compressed file size or an LLM estimate.
 5. Gemini returns a bounded structured transcript/rubric result. Python counts transcript words and filler candidates. The API atomically saves the attempt and returns a validated response; React validates it again before rendering.
 
-Each submission is stored independently. There is no history lookup, shared-session comparison or long-term profile update. A suggested focus is not a verified highest-impact diagnosis. Counts depend on transcript fidelity; the prototype does not validate evidence or independently establish speech accuracy.
+The web frontend now uses explicit practice-session APIs for durable owned sessions, session-scoped attempts, persisted interventions and backend-owned retry comparisons. The legacy latest-attempt endpoint remains as a compatibility shim. Evaluations include prompt/model/schema/rubric/metric provenance and quote-backed transcript evidence; the evaluator can abstain instead of inventing feedback. Long-term profile updates are not implemented. A suggested focus is not a verified highest-impact diagnosis. Counts depend on transcript fidelity; the prototype does not independently establish speech accuracy.
 
 See the [documentation index](docs/README.md) for the target architecture and [historical audit with implementation status](docs/current-state-audit.md). Future capabilities are explicitly separated from this working slice.
+
+## Android-first direction
+
+The current web app is the technical proof. The product target is an Android app for Google Play that reuses the same backend contracts and keeps the loop narrow: record a technical explanation, review privately, receive one target, retry and compare. The Android plan is documented in [Android-first system design](docs/android-first-system-design.md), the operating standards are in [Engineering practices](docs/engineering-practices.md), and the next PR sequence is in [Implementation and system design plan](docs/implementation-system-design-plan.md).
 
 ## Local development
 
@@ -28,6 +36,14 @@ pip install -r requirements-dev.txt
 # Copy .env.example to .env; set GEMINI_API_KEY on the backend only.
 uvicorn app.main:app --reload
 ```
+
+Schema migrations, from the repository root:
+
+```sh
+alembic upgrade head
+```
+
+`DB_AUTO_CREATE=true` preserves the local prototype path. Release-style environments should use Alembic migrations deliberately instead of relying on import-time table creation.
 
 Frontend, in another terminal from the repository root:
 
@@ -45,13 +61,23 @@ From the repository root:
 
 ```sh
 python -m pytest tests/
+alembic upgrade head
 cd frontend
 npm run typecheck
 npm test
 npm run build
 ```
 
-Local verification on Python 3.14.4 / Node 26.4.0: **78 backend tests and 21 frontend tests pass**, and TypeScript/production build pass. Backend tests include actual multipart HTTP requests, real isolated SQLite round-trips and compiled workflow paths with a mocked provider. A shared response fixture is checked by both backend and frontend tests. The SDK emits one deprecation warning on Python 3.14. These are local results, not a claim that remote CI has run.
+Local verification on Python 3.14.4 / Node 26.4.0: **94 backend tests and 23 frontend tests pass**, and TypeScript/production build pass. Backend tests include actual multipart HTTP requests, real isolated SQLite round-trips, Alembic migration checks, session-scoped attempt APIs, ownership checks, persisted intervention/comparison behavior, evidence validation, abstention validation, offline evaluation fixtures and compiled workflow paths with a mocked provider. Frontend tests cover session-scoped upload, evidence rendering and backend-owned comparison rendering. The SDK emits one deprecation warning on Python 3.14. These are local results, not a claim that remote CI has run.
+
+## What this demonstrates
+
+- Product development: a narrow, high-pain communication practice loop instead of a generic AI wrapper.
+- AI engineering: versioned prompts, bounded Gemini output, schema validation, timeout control and safe failure behavior.
+- Full-stack execution: React media capture/review, FastAPI validation/persistence and contract tests across backend and frontend.
+- Engineering maturity: privacy boundaries, known limitations, CI, ADRs, roadmap and claim-to-evidence documentation.
+
+For a scholarship, professor or recruiter review path, see [Portfolio case study](docs/portfolio-case-study.md).
 
 Normal CI uses mocked providers and no paid model calls. Live Gemini behavior, real-device recording compatibility, production deployment and model reliability benchmarks have not been verified.
 

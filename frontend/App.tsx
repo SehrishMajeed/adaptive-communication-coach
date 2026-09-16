@@ -1,6 +1,6 @@
 
 import React, { useState, useCallback } from 'react';
-import { AppState, AIFeedback } from './types';
+import { AppState, AIFeedback, BackendComparison } from './types';
 import WelcomeScreen from './components/WelcomeScreen';
 import RecordingScreen from './components/RecordingScreen';
 import ReviewScreen from './components/ReviewScreen';
@@ -13,6 +13,8 @@ const App: React.FC = () => {
   const [appState, setAppState] = useState<AppState>(AppState.WELCOME);
   const [recording, setRecording] = useState<Recording | null>(null);
   const [feedback, setFeedback] = useState<AIFeedback | null>(null);
+  const [comparison, setComparison] = useState<BackendComparison | null>(null);
+  const [sessionId, setSessionId] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const handleStart = () => {
@@ -29,11 +31,12 @@ const App: React.FC = () => {
 
     setAppState(AppState.ANALYZING);
     setError(null);
-    setFeedback(null);
 
     try {
-      const result = await analyzeRecording(recording);
-      setFeedback(result);
+      const result = await analyzeRecording(recording, sessionId);
+      setSessionId(result.sessionId);
+      setComparison(result.comparison);
+      setFeedback(result.feedback);
       setAppState(AppState.FEEDBACK);
     } catch (err) {
 
@@ -41,12 +44,20 @@ const App: React.FC = () => {
       setError(`Failed to get AI feedback. ${errorMessage}`);
       setAppState(AppState.REVIEW); // Go back to review screen on error
     }
-  }, [recording]);
+  }, [recording, sessionId]);
+
+  const handleRetrySameExplanation = () => {
+    setRecording(null);
+    setError(null);
+    setAppState(AppState.RECORDING);
+  };
 
   const handleRestart = () => {
     setAppState(AppState.WELCOME);
     setRecording(null);
     setFeedback(null);
+    setComparison(null);
+    setSessionId(null);
     setError(null);
   };
 
@@ -61,7 +72,7 @@ const App: React.FC = () => {
       case AppState.ANALYZING:
         return <Loader />;
       case AppState.FEEDBACK:
-        return <FeedbackScreen feedback={feedback!} onRestart={handleRestart} />;
+        return <FeedbackScreen feedback={feedback!} comparison={comparison} onRetrySame={handleRetrySameExplanation} onRestart={handleRestart} />;
       default:
         return <WelcomeScreen onStart={handleStart} />;
     }

@@ -5,13 +5,27 @@ import pytest
 from sqlalchemy import create_engine, text
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import sessionmaker
-from backend.app.models.database import CoachingAttempt, CoachingSession, UserProfile
+from backend.app.models.database import (
+    AttemptComparison,
+    CoachingAttempt,
+    CoachingSession,
+    PracticeAttempt,
+    PracticeEvaluation,
+    PracticeIntervention,
+    PracticeMeasurement,
+    PracticeSession,
+    PracticeUser,
+    UserProfile,
+)
 from backend.app.models.database import ensure_attempt_measurement_columns
-from backend.app.schemas.attempt import measurements_from_attempt
+from backend.app.schemas.attempt import ATTEMPT_RESPONSE_SCHEMA_VERSION, METRIC_VERSION, RUBRIC_VERSION, measurements_from_attempt
 from backend.app.services.llm_provider import ProviderFailure
 from backend.app.services.media import validate_audio, InvalidMedia, MAX_AUDIO_BYTES
+from backend.app.services.prompts import EVALUATION_PROMPT_VERSION
 
 URL = "/api/sessions/latest/attempts"
+SESSION_URL = "/api/practice-sessions"
+OWNER_HEADERS = {"X-Owner-Token": "owner-token-123"}
 
 
 def wav(seconds=5, rate=8000, channels=1, width=2):
@@ -26,6 +40,19 @@ def wav(seconds=5, rate=8000, channels=1, width=2):
 
 def submit(client, data=None, duration="5", mime="audio/wav"):
     return client.post(URL, files={"audio": ("recording.wav", wav() if data is None else data, mime)}, data={"duration_seconds": duration})
+
+
+def create_session(client, headers=None, payload=None):
+    return client.post(SESSION_URL, headers=headers or OWNER_HEADERS, json=payload or {})
+
+
+def submit_session_attempt(client, session_id, idempotency_key="attempt-key-1", headers=None, data=None, duration="5", mime="audio/wav"):
+    return client.post(
+        f"{SESSION_URL}/{session_id}/attempts",
+        headers=headers or OWNER_HEADERS,
+        files={"audio": ("recording.wav", wav() if data is None else data, mime)},
+        data={"duration_seconds": duration, "idempotency_key": idempotency_key},
+    )
 
 
 def test_http_contract_and_persistence(client, database, evaluator, contract):
@@ -45,6 +72,123 @@ def test_http_contract_and_persistence(client, database, evaluator, contract):
     assert mime == "audio/wav"
     assert audio == wav()
     assert "non-technical" in scenario
+
+
+def test_create_practice_session_persists_anonymous_owner(client, database):
+    result = create_session(client, payload={
+        "scenario": "Explain my AI project",
+        "audience": "recruiter",
+        "goal": "make value clear",
+        "requested_duration_seconds": 60,
+    })
+    assert result.status_code == 200
+    body = result.json()
+    assert body["session_id"] == 1
+    assert body["scenario"] == "Explain my AI project"
+    assert body["audience"] == "recruiter"
+    assert body["goal"] == "make value clear"
+    assert body["requested_duration_seconds"] == 60
+    assert body["status"] == "active"
+    assert database.query(PracticeUser).count() == 1
+    saved = database.query(PracticeSession).one()
+    assert saved.owner_id == database.query(PracticeUser).one().id
+
+
+def test_practice_session_attempt_is_owned_versioned_and_sequence_scoped(client, database, evaluator, contract):
+    session = create_session(client).json()
+    first = submit_session_attempt(client, session["session_id"], idempotency_key="attempt-key-1")
+    second = submit_session_attempt(client, session["session_id"], idempotency_key="attempt-key-2")
+    assert first.status_code == 200
+    assert second.status_code == 200
+    assert first.json()["measurements"] == contract["measurements"]
+    assert [attempt.sequence_number for attempt in database.query(PracticeAttempt).order_by(PracticeAttempt.sequence_number)] == [1, 2]
+    assert database.query(CoachingAttempt).count() == 0
+
+    measurement = database.query(PracticeMeasurement).filter(PracticeMeasurement.attempt_id == first.json()["attempt_id"]).one()
+    evaluation = database.query(PracticeEvaluation).filter(PracticeEvaluation.attempt_id == first.json()["attempt_id"]).one()
+    assert measurement.metric_version == METRIC_VERSION
+    assert evaluation.prompt_version == EVALUATION_PROMPT_VERSION
+    assert evaluation.model_id == "gemini-2.5-flash"
+    assert evaluation.schema_version == ATTEMPT_RESPONSE_SCHEMA_VERSION
+    assert evaluation.rubric_version == RUBRIC_VERSION
+    assert evaluation.evaluator_status == "completed"
+    assert evaluation.evidence_json == contract["evaluation"]["evidence"]
+    assert first.json()["provenance"] == contract["provenance"]
+    assert first.json()["intervention"]["target_skill"] == "clarity"
+    assert first.json()["intervention"]["status"] == "assigned"
+    assert first.json()["comparison"] is None
+    assert second.json()["comparison"]["baseline_attempt_id"] == first.json()["attempt_id"]
+    assert second.json()["comparison"]["retry_attempt_id"] == second.json()["attempt_id"]
+    assert second.json()["comparison"]["target_skill"] == "clarity"
+    assert second.json()["comparison"]["comparability_status"] == "comparable"
+    assert second.json()["comparison"]["verdict"] == "no_clear_change"
+    assert database.query(PracticeIntervention).count() == 1
+    assert database.query(AttemptComparison).count() == 1
+
+
+def test_practice_session_retry_comparison_reports_improvement(client, database, evaluator, contract):
+    session_id = create_session(client).json()["session_id"]
+    submit_session_attempt(client, session_id, idempotency_key="baseline-key")
+    improved = contract["evaluation"].copy()
+    improved["clarity"] = 9
+    evaluator.return_value = type(evaluator.return_value)(**improved)
+    retry = submit_session_attempt(client, session_id, idempotency_key="retry-key")
+    assert retry.status_code == 200
+    comparison = retry.json()["comparison"]
+    assert comparison["verdict"] == "improved"
+    assert comparison["deltas"]["clarity"] == 2
+    assert comparison["deltas"]["wpm"] == 0
+    assert comparison["deltas"]["total_fillers"] == 0
+    saved = database.query(AttemptComparison).one()
+    assert saved.verdict == "improved"
+    assert saved.deltas_json["clarity"] == 2
+
+
+def test_practice_session_attempt_idempotency_returns_existing_completed_attempt(client, database, evaluator):
+    session_id = create_session(client).json()["session_id"]
+    first = submit_session_attempt(client, session_id, idempotency_key="same-key-123").json()
+    second = submit_session_attempt(client, session_id, idempotency_key="same-key-123").json()
+    assert second == first
+    assert database.query(PracticeAttempt).count() == 1
+    assert database.query(PracticeIntervention).count() == 1
+    assert evaluator.call_count == 1
+
+
+def test_practice_session_retry_idempotency_replays_existing_comparison(client, database, evaluator):
+    session_id = create_session(client).json()["session_id"]
+    submit_session_attempt(client, session_id, idempotency_key="baseline-key")
+    first_retry = submit_session_attempt(client, session_id, idempotency_key="retry-key").json()
+    second_retry = submit_session_attempt(client, session_id, idempotency_key="retry-key").json()
+    assert second_retry == first_retry
+    assert second_retry["comparison"]["baseline_attempt_id"] == 1
+    assert database.query(PracticeAttempt).count() == 2
+    assert database.query(AttemptComparison).count() == 1
+    assert evaluator.call_count == 2
+
+
+def test_practice_session_attempt_rejects_wrong_owner(client, database, evaluator):
+    session_id = create_session(client).json()["session_id"]
+    result = submit_session_attempt(client, session_id, headers={"X-Owner-Token": "other-owner-123"})
+    assert result.status_code == 403
+    evaluator.assert_not_called()
+    assert database.query(PracticeAttempt).count() == 0
+
+
+def test_practice_session_attempt_provider_failure_does_not_complete_attempt(client, database, evaluator):
+    session_id = create_session(client).json()["session_id"]
+    evaluator.side_effect = ProviderFailure("secret-provider-detail")
+    result = submit_session_attempt(client, session_id)
+    assert result.status_code == 502
+    assert database.query(PracticeAttempt).count() == 0
+    assert database.query(PracticeEvaluation).count() == 0
+    assert database.query(PracticeMeasurement).count() == 0
+
+
+def test_practice_session_attempt_rejects_missing_session_before_provider(client, database, evaluator):
+    result = submit_session_attempt(client, 999)
+    assert result.status_code == 404
+    evaluator.assert_not_called()
+    assert database.query(PracticeAttempt).count() == 0
 
 
 def test_measurements_round_trip_from_committed_database_row(client, database, evaluator, contract):

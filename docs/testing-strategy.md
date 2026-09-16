@@ -1,6 +1,6 @@
 # Testing strategy
 
-Status: proposed expansion. Current evidence is seven passing local Python tests, a failing frontend build/typecheck, and isolated audit probes; see [audit](current-state-audit.md). Normal CI must not need model credentials or make paid calls.
+Status: active strategy. Current local evidence is 94 passing backend tests, 23 passing frontend tests, passing TypeScript checks and a passing production frontend build. Normal CI must not need model credentials or make paid calls.
 
 ## Test layers
 

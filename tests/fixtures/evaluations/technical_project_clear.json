@@ -1,0 +1,35 @@
+{
+  "id": "technical_project_clear",
+  "description": "Usable technical project explanation with quote-backed clarity feedback.",
+  "risk": "normal",
+  "expected": {
+    "status": "completed",
+    "recommended_focus": "clarity",
+    "required_quote": "I built an app that helps students practice interviews."
+  },
+  "evaluation": {
+    "evaluator_status": "completed",
+    "abstention_reason": null,
+    "transcript": "I built an app that helps students practice interviews. It records a short answer and gives one clear thing to improve.",
+    "clarity": 7,
+    "structure": 6,
+    "conciseness": 8,
+    "audience_awareness": 7,
+    "strengths": [
+      "The explanation names the user and the core action."
+    ],
+    "weaknesses": [
+      "The opening could explain why this matters to the listener."
+    ],
+    "recommended_focus": [
+      "clarity"
+    ],
+    "evidence": [
+      {
+        "skill": "clarity",
+        "quote": "I built an app that helps students practice interviews.",
+        "note": "This gives a clear starting point, but the listener benefit needs sharper framing."
+      }
+    ]
+  }
+}

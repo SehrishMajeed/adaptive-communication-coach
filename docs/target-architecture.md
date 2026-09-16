@@ -1,31 +1,28 @@
 # Target architecture
 
-Status: proposed design, not implemented. This is the canonical architecture document; the current flow is included to show the transition. See [audit](current-state-audit.md), [domain model](domain-model.md), and [ADRs](adr/README.md).
+Status: target design with current implementation notes. This is the canonical backend/system architecture document; Android delivery is covered in [Android-first system design](android-first-system-design.md). See [audit](current-state-audit.md), [domain model](domain-model.md), and [ADRs](adr/README.md).
 
 ## Current architecture
 
 ```mermaid
 flowchart TD
   Browser[React capture: camera and microphone] --> Review[Local replay modes]
-  Review -->|Whole video blob in audio field| API[FastAPI: shared demo session]
-  API --> Guess[Byte-length duration guess]
-  Guess --> Eval[LangGraph evaluate node]
+  Review -->|Separate audio-only WAV + duration| API[FastAPI: latest attempt endpoint]
+  API --> Validate[Validate WAV, size, sample duration and capture duration]
+  Validate --> Eval[LangGraph evaluate node]
   Eval --> Gemini[Gemini transcription and rubric in one call]
   Gemini --> Metrics[Python transcript metrics]
-  Metrics --> Retry{Previous attempt exists?}
-  Retry -->|Yes| Compare[Metric comparison prose]
-  Retry -->|No| Save[Route saves attempt and clarity average]
-  Compare --> Save
+  Metrics --> Save[Route saves independent attempt]
   Save --> DB[(SQLAlchemy / SQLite or PostgreSQL)]
-  Save --> Response[Untyped response mapping]
-  Response --> Broken[Feedback category mismatch]
+  Save --> Response[Validated response contract]
+  Response --> FrontendCompare[In-memory retry comparison in frontend]
 ```
 
-This is a modular prototype in one backend process. The graph neither validates evidence nor updates the profile. There is no worker, object store, history API, migration system, or authentication layer. An in-memory graph state is not durable job state. Actual failures are detailed in the audit.
+This is a modular prototype in one backend process. The graph neither validates evidence nor updates the profile. There is no worker, object store, history API, migration system, or authentication layer. The current retry comparison is frontend memory only, not durable coaching state. Manual Chrome/DevTools verification remains required before claiming the live privacy path is fully verified.
 
 ## Target: one modular application
 
-Keep React/TypeScript, FastAPI, Python domain functions, SQLAlchemy and a small LangGraph. Keep Gemini behind a provider interface. No new infrastructure is justified by the current evidence. Begin with bounded request processing; add durable background jobs only if measured processing times or disconnect recovery demand them.
+Keep FastAPI, Python domain functions, SQLAlchemy and a small LangGraph. Keep Gemini behind a provider interface. The web React client remains a prototype; the product client should become Android-first after durable backend sessions exist. No new infrastructure is justified by the current evidence. Begin with bounded request processing; add durable background jobs only if measured processing times or disconnect recovery demand them.
 
 | Layer | Responsibility | Must not own |
 | --- | --- | --- |

@@ -8,5 +8,6 @@ Recorded 2026-09-14. These decisions are accepted direction for the proposed pro
 4. [Ephemeral raw recordings](0004-ephemeral-recordings.md)
 5. [Earned ML complexity](0005-earned-ml-complexity.md)
 6. [Technical communication focus](0006-technical-communication-focus.md)
+7. [Android-first narrow practice loop](0007-android-first-narrow-loop.md)
 
 Revisit decisions with concrete failure cases or measured requirements. Supersede an ADR explicitly rather than silently rewriting its historical decision.

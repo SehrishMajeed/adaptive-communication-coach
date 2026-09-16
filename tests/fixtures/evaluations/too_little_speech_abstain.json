@@ -1,0 +1,23 @@
+{
+  "id": "too_little_speech_abstain",
+  "description": "Evaluator abstains when there is not enough intelligible speech.",
+  "risk": "abstention",
+  "expected": {
+    "status": "abstained",
+    "recommended_focus": null,
+    "required_quote": null
+  },
+  "evaluation": {
+    "evaluator_status": "abstained",
+    "abstention_reason": "The audio did not contain enough intelligible speech to evaluate the explanation.",
+    "transcript": "",
+    "clarity": null,
+    "structure": null,
+    "conciseness": null,
+    "audience_awareness": null,
+    "strengths": [],
+    "weaknesses": [],
+    "recommended_focus": [],
+    "evidence": []
+  }
+}

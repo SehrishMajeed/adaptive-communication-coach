@@ -10,9 +10,9 @@ interface ReviewScreenProps {
 }
 
 const modeConfig = {
-    [ReviewMode.FULL]: { title: 'Full Replay', description: 'Watch and listen to your full performance. Note your overall delivery and message clarity.' },
-    [ReviewMode.MUTED]: { title: 'Body Language Review (Muted)', description: 'Watch without sound. Focus on your posture, gestures, facial expressions, and eye contact.' },
-    [ReviewMode.AUDIO_ONLY]: { title: 'Vocal Tone Review (Audio Only)', description: 'Listen without video. Focus on your tone, pace, clarity, and use of filler words.' }
+    [ReviewMode.FULL]: { title: 'Full Replay', description: 'Watch and listen once. Ask: would a nontechnical listener understand the point?' },
+    [ReviewMode.MUTED]: { title: 'Presence Review (Local Video)', description: 'Video stays in your browser. Watch without sound and self-check posture, gestures, and eye contact.' },
+    [ReviewMode.AUDIO_ONLY]: { title: 'Voice Review (Audio Only)', description: 'Listen without video. Notice clarity, structure, pace, and filler words before asking for AI suggestions.' }
 };
 
 const ReviewScreen: React.FC<ReviewScreenProps> = ({ videoBlob, onAnalyze, onRestart, error }) => {
@@ -38,8 +38,8 @@ const ReviewScreen: React.FC<ReviewScreenProps> = ({ videoBlob, onAnalyze, onRes
 
   return (
     <div className="w-full flex flex-col items-center">
-      <h2 className="text-3xl font-bold mb-4">Review Your Performance</h2>
-      <p className="text-gray-400 mb-6">Use the modes below to analyze your practice session from different perspectives.</p>
+      <h2 className="text-3xl font-bold mb-4">Review Before AI Feedback</h2>
+      <p className="text-gray-400 mb-6">First notice what did or did not land. Then ask for one evidence-based improvement target.</p>
 
       <div className="w-full max-w-2xl flex flex-col md:flex-row gap-6">
         <div className="flex-grow">
@@ -88,7 +88,7 @@ const ReviewScreen: React.FC<ReviewScreenProps> = ({ videoBlob, onAnalyze, onRes
             Record Again
         </button>
         <button onClick={onAnalyze} className="px-8 py-4 bg-purple-600 text-white font-bold rounded-lg hover:bg-purple-500 transition-all duration-300 transform hover:scale-105 shadow-lg shadow-purple-600/30">
-            Get AI Feedback
+            Find My One Priority
         </button>
       </div>
     </div>

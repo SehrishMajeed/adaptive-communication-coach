@@ -6,6 +6,7 @@ langchain
 langgraph
 google-genai
 sqlalchemy
+alembic
 psycopg2-binary
 
 langsmith
