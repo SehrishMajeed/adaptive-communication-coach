@@ -35,6 +35,9 @@
         "quote": "I mostly describe encryption details.",
         "note": "The explanation should translate implementation detail into listener-facing value."
       }
-    ]
+    ],
+    "input_quality": "usable",
+    "evidence_status": "quote_verified",
+    "feedback_status": "actionable"
   }
 }

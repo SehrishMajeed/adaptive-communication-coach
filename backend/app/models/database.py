@@ -164,6 +164,9 @@ class PracticeEvaluation(Base):
     schema_version = Column(String, nullable=False)
     rubric_version = Column(String, nullable=False)
     evaluator_status = Column(String, nullable=False)
+    input_quality = Column(String, nullable=False)
+    evidence_status = Column(String, nullable=False)
+    feedback_status = Column(String, nullable=False)
     clarity = Column(Float, nullable=True)
     structure = Column(Float, nullable=True)
     conciseness = Column(Float, nullable=True)
@@ -177,6 +180,9 @@ class PracticeEvaluation(Base):
 
     __table_args__ = (
         CheckConstraint("evaluator_status IN ('completed', 'abstained', 'invalid')", name="ck_practice_evaluations_status"),
+        CheckConstraint("input_quality IN ('usable', 'limited', 'unusable')", name="ck_practice_evaluations_input_quality"),
+        CheckConstraint("evidence_status IN ('quote_verified', 'insufficient_evidence', 'unavailable')", name="ck_practice_evaluations_evidence_status"),
+        CheckConstraint("feedback_status IN ('actionable', 'needs_retry', 'abstained')", name="ck_practice_evaluations_feedback_status"),
         CheckConstraint("clarity IS NULL OR clarity BETWEEN 0 AND 10", name="ck_practice_evaluations_clarity_bounds"),
         CheckConstraint("structure IS NULL OR structure BETWEEN 0 AND 10", name="ck_practice_evaluations_structure_bounds"),
         CheckConstraint("conciseness IS NULL OR conciseness BETWEEN 0 AND 10", name="ck_practice_evaluations_conciseness_bounds"),

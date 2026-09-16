@@ -18,6 +18,9 @@
     "strengths": [],
     "weaknesses": [],
     "recommended_focus": [],
-    "evidence": []
+    "evidence": [],
+    "input_quality": "unusable",
+    "evidence_status": "unavailable",
+    "feedback_status": "abstained"
   }
 }

@@ -2,7 +2,7 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field
 from ..domain.evaluation import CommunicationEvaluation
 
-ATTEMPT_RESPONSE_SCHEMA_VERSION = "attempt-response-v1"
+ATTEMPT_RESPONSE_SCHEMA_VERSION = "attempt-response-v2"
 RUBRIC_VERSION = "technical-explanation-v1"
 METRIC_VERSION = "speech-metrics-v1"
 

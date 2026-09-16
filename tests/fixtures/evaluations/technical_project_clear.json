@@ -30,6 +30,9 @@
         "quote": "I built an app that helps students practice interviews.",
         "note": "This gives a clear starting point, but the listener benefit needs sharper framing."
       }
-    ]
+    ],
+    "input_quality": "usable",
+    "evidence_status": "quote_verified",
+    "feedback_status": "actionable"
   }
 }

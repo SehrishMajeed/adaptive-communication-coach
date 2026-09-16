@@ -44,7 +44,13 @@ def test_phase2_migration_creates_durable_practice_tables(migrated_engine):
         "alembic_version",
     }.issubset(tables)
     evaluation_columns = {column["name"] for column in inspector.get_columns("practice_evaluations")}
-    assert {"evidence_json", "abstention_reason"}.issubset(evaluation_columns)
+    assert {
+        "evidence_json",
+        "abstention_reason",
+        "input_quality",
+        "evidence_status",
+        "feedback_status",
+    }.issubset(evaluation_columns)
 
 
 def test_phase2_attempt_sequence_and_idempotency_are_unique(migrated_engine):
@@ -100,11 +106,13 @@ def test_phase2_constraints_reject_invalid_status_and_scores(migrated_engine):
             connection.execute(text("""
                 INSERT INTO practice_evaluations (
                     attempt_id, prompt_version, model_id, schema_version, rubric_version,
-                    evaluator_status, clarity, structure, conciseness, audience_awareness,
+                    evaluator_status, input_quality, evidence_status, feedback_status,
+                    clarity, structure, conciseness, audience_awareness,
                     strengths_json, weaknesses_json
                 )
                 VALUES (
                     1, 'evaluation-audio-v1', 'gemini-2.5-flash', 'attempt-response-v1',
-                    'technical-explanation-v1', 'completed', 11, 5, 5, 5, '[]', '[]'
+                    'technical-explanation-v1', 'completed', 'usable', 'quote_verified',
+                    'actionable', 11, 5, 5, 5, '[]', '[]'
                 )
             """))

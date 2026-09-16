@@ -73,6 +73,18 @@ const ComparisonMetric: React.FC<{ label: string; delta: number; unit?: string }
   </div>
 );
 
+const qualityLabels = {
+  usable: 'Usable input',
+  limited: 'Limited input',
+  unusable: 'Unusable input',
+  quote_verified: 'Quotes verified',
+  insufficient_evidence: 'Insufficient evidence',
+  unavailable: 'Evidence unavailable',
+  actionable: 'Actionable feedback',
+  needs_retry: 'Needs retry',
+  abstained: 'Evaluator abstained',
+};
+
 const FeedbackScreen: React.FC<FeedbackScreenProps> = ({ feedback, comparison, onRetrySame, onRestart }) => {
   const primaryFocus = feedback.evaluation.recommended_focus[0];
   const drill = primaryFocus ? focusDrills[primaryFocus] : 'Retry the explanation with a clearer opening sentence.';
@@ -83,6 +95,16 @@ const FeedbackScreen: React.FC<FeedbackScreenProps> = ({ feedback, comparison, o
     <div className="w-full p-6 bg-gray-800/50 rounded-2xl shadow-2xl border border-gray-700 backdrop-blur-sm animate-fade-in">
       <h2 className="text-3xl font-bold text-center mb-2">Your One Practice Target</h2>
       <p className="text-lg text-center text-gray-400 mb-6">AI suggestions for this attempt — not verified progress.</p>
+
+      <div className="mb-6 bg-gray-900/60 p-4 rounded-lg border border-gray-700">
+        <h3 className="text-lg font-semibold mb-2">Trust notes</h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
+          <p><span className="text-gray-400">Input:</span> {qualityLabels[feedback.evaluation.input_quality]}</p>
+          <p><span className="text-gray-400">Evidence:</span> {qualityLabels[feedback.evaluation.evidence_status]}</p>
+          <p><span className="text-gray-400">Feedback:</span> {qualityLabels[feedback.evaluation.feedback_status]}</p>
+        </div>
+        <p className="mt-2 text-sm text-gray-400">These comments show when the AI can act, when it abstains, and whether transcript quotes support the coaching.</p>
+      </div>
 
       {completed ? (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">

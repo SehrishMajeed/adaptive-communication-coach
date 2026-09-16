@@ -39,6 +39,9 @@ def test_abstained_evaluation_has_no_scores_or_evidence(contract):
         **contract["evaluation"],
         "evaluator_status": "abstained",
         "abstention_reason": "The audio did not contain enough intelligible speech.",
+        "input_quality": "unusable",
+        "evidence_status": "unavailable",
+        "feedback_status": "abstained",
         "transcript": "",
         "clarity": None,
         "structure": None,
@@ -50,6 +53,34 @@ def test_abstained_evaluation_has_no_scores_or_evidence(contract):
         "evidence": [],
     }
     assert CommunicationEvaluation(**evaluation).evaluator_status == "abstained"
+
+
+def test_completed_evaluation_requires_quality_metadata(contract):
+    contract["evaluation"]["evidence_status"] = "insufficient_evidence"
+    with pytest.raises(ValidationError):
+        CommunicationEvaluation(**contract["evaluation"])
+
+
+def test_abstained_evaluation_rejects_actionable_feedback_status(contract):
+    evaluation = {
+        **contract["evaluation"],
+        "evaluator_status": "abstained",
+        "abstention_reason": "The audio did not contain enough intelligible speech.",
+        "input_quality": "limited",
+        "evidence_status": "insufficient_evidence",
+        "feedback_status": "actionable",
+        "transcript": "",
+        "clarity": None,
+        "structure": None,
+        "conciseness": None,
+        "audience_awareness": None,
+        "strengths": [],
+        "weaknesses": [],
+        "recommended_focus": [],
+        "evidence": [],
+    }
+    with pytest.raises(ValidationError):
+        CommunicationEvaluation(**evaluation)
 
 
 @pytest.mark.parametrize("output", [None, "{broken", '{"clarity":999}'])

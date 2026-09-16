@@ -23,7 +23,7 @@ These nine phases supersede the earlier phase numbering. The audit is complete p
 ## Phase 3: evidence-grounded AI
 
 - Objective: make qualitative judgments inspectable and reject unsupported conclusions.
-- Deliverables: anchored audience/goal rubric, typed evidence references, transcript/input quality, finite scores, evaluator uncertainty and abstention, prompt/model/schema provenance, offline fixtures and initial evaluation runner.
+- Deliverables: anchored audience/goal rubric, typed evidence references, transcript/input quality, finite scores, evaluator uncertainty and abstention, explicit `input_quality`/`evidence_status`/`feedback_status`, prompt/model/schema provenance, offline fixtures and initial evaluation runner.
 - Dependencies: durable versioned attempt/evaluation records and supported input formats; consented or synthetic evaluation data.
 - Acceptance: unsupported evidence cannot update a profile; every presented main diagnosis has validated provenance; unusable inputs have honest outcomes. Publish pilot methodology/results only after running it, including failures.
 - Tests: provider mocks, range/schema and evidence validators, prompt-injection/low-quality fixtures, abstention workflow; separately budgeted stability/human-agreement pilot.

@@ -20,6 +20,9 @@ export interface AIFeedback {
   evaluation: {
     evaluator_status: 'completed' | 'abstained';
     abstention_reason: string | null;
+    input_quality: 'usable' | 'limited' | 'unusable';
+    evidence_status: 'quote_verified' | 'insufficient_evidence' | 'unavailable';
+    feedback_status: 'actionable' | 'needs_retry' | 'abstained';
     transcript: string;
     clarity: number | null;
     structure: number | null;
@@ -74,8 +77,11 @@ export function parseFeedback(value: unknown): AIFeedback {
       !integer(m.word_count) || !integer(m.wpm) || !integer(m.total_fillers) ||
       !Array.isArray(m.filler_words_list) || !m.filler_words_list.every(x => object(x) && keys(x, ['word', 'count']) && text(x.word, 1000) && integer(x.count, 1)) ||
       m.filler_words_list.reduce((sum, x) => sum + x.count, 0) !== m.total_fillers) throw new Error('Invalid measurements');
-  if (!object(e) || !keys(e, ['evaluator_status', 'abstention_reason', 'transcript', ...skills, 'strengths', 'weaknesses', 'recommended_focus', 'evidence']) ||
+  if (!object(e) || !keys(e, ['evaluator_status', 'abstention_reason', 'input_quality', 'evidence_status', 'feedback_status', 'transcript', ...skills, 'strengths', 'weaknesses', 'recommended_focus', 'evidence']) ||
       (e.evaluator_status !== 'completed' && e.evaluator_status !== 'abstained') ||
+      !['usable', 'limited', 'unusable'].includes(String(e.input_quality)) ||
+      !['quote_verified', 'insufficient_evidence', 'unavailable'].includes(String(e.evidence_status)) ||
+      !['actionable', 'needs_retry', 'abstained'].includes(String(e.feedback_status)) ||
       typeof e.transcript !== 'string' || e.transcript.length > 20000 ||
       !strings(e.strengths) || !strings(e.weaknesses) ||
       !Array.isArray(e.recommended_focus) || e.recommended_focus.length > 1 ||
@@ -85,9 +91,13 @@ export function parseFeedback(value: unknown): AIFeedback {
   const scoreValues = skills.map(skill => e[skill]);
   if (e.evaluator_status === 'completed') {
     if (!text(e.transcript, 20000) || scoreValues.some(score => !number(score, 0, 10)) ||
-        e.abstention_reason !== null || e.evidence.length === 0 ||
+        e.abstention_reason !== null || e.input_quality === 'unusable' ||
+        e.evidence_status !== 'quote_verified' || e.feedback_status !== 'actionable' ||
+        e.evidence.length === 0 ||
         !e.evidence.every(x => String(e.transcript).toLowerCase().includes(String(x.quote).toLowerCase()))) throw new Error('Invalid evaluation');
-  } else if (scoreValues.some(score => score !== null) || e.abstention_reason === null || e.recommended_focus.length !== 0 || e.evidence.length !== 0) {
+  } else if (scoreValues.some(score => score !== null) || e.abstention_reason === null ||
+      e.input_quality === 'usable' || e.evidence_status === 'quote_verified' ||
+      e.feedback_status !== 'abstained' || e.recommended_focus.length !== 0 || e.evidence.length !== 0) {
     throw new Error('Invalid evaluation');
   }
   if (!object(p) || !keys(p, ['prompt_version', 'model_id', 'schema_version', 'rubric_version', 'metric_version']) ||

@@ -31,6 +31,7 @@ It verifies:
 - current prompt version is present;
 - prompt says spoken instructions are untrusted;
 - fixture output validates against `CommunicationEvaluation`;
+- evaluator quality metadata is schema-valid and status-consistent;
 - expected status and focus match;
 - required quote appears in evidence;
 - prompt-injection fixture does not receive all-10 scores.

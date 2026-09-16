@@ -13,8 +13,12 @@ it('renders the exact HTTP contract checked by backend tests', () => {
   expect(screen.queryByText('Confidence')).not.toBeInTheDocument();
   expect(screen.queryByText('Engagement')).not.toBeInTheDocument();
   expect(screen.getByText('Evidence from your transcript')).toBeInTheDocument();
+  expect(screen.getByText('Trust notes')).toBeInTheDocument();
+  expect(screen.getByText('Usable input')).toBeInTheDocument();
+  expect(screen.getByText('Quotes verified')).toBeInTheDocument();
+  expect(screen.getByText('Actionable feedback')).toBeInTheDocument();
   expect(screen.getByText('Um, hello.')).toBeInTheDocument();
-  expect(screen.getByText(/Prompt: evaluation-audio-v2/)).toBeInTheDocument();
+  expect(screen.getByText(/Prompt: evaluation-audio-v3/)).toBeInTheDocument();
   expect(screen.getByText(contract.evaluation.transcript)).toBeInTheDocument();
 });
 

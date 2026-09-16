@@ -81,6 +81,8 @@ AI proposes clarity, structure, conciseness, audience adaptation, and explanatio
 
 Do not claim filler absence when transcription may have removed disfluencies. Persist transcript provenance, metric/rubric versions and eligibility so results can be audited and recomputed. Distinguish input quality, evaluator uncertainty, and observed skill level.
 
+Current PR 3C implementation records three explicit evaluator quality statuses on every durable practice evaluation: `input_quality`, `evidence_status`, and `feedback_status`. The frontend renders them as visible trust notes so users and reviewers can see whether feedback was actionable, quote-supported, or abstained instead of silently trusting AI output.
+
 ## Failure and transaction boundaries
 
 - Reject unauthorized or invalid requests before processing; stable error codes distinguish invalid media, unavailable transcription, invalid evaluation, provider timeout and persistence failure. Frontend preserves a retryable local recording when appropriate.

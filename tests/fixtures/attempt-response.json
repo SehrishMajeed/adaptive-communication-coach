@@ -40,12 +40,15 @@
         "quote": "Um, hello.",
         "note": "The opening is understandable but does not yet name the project or listener benefit."
       }
-    ]
+    ],
+    "input_quality": "usable",
+    "evidence_status": "quote_verified",
+    "feedback_status": "actionable"
   },
   "provenance": {
-    "prompt_version": "evaluation-audio-v2",
+    "prompt_version": "evaluation-audio-v3",
     "model_id": "gemini-2.5-flash",
-    "schema_version": "attempt-response-v1",
+    "schema_version": "attempt-response-v2",
     "rubric_version": "technical-explanation-v1",
     "metric_version": "speech-metrics-v1"
   }

@@ -16,7 +16,7 @@ Status: active strategy. Current local evidence is 94 passing backend tests, 23 
 | Provider adapter | Mock SDK transport/client boundary: valid structured response, missing fields, score bounds/nonfinite values, empty output, malformed JSON, timeout/rate limit, retry exhaustion, usage metadata; no live client initialization needed in normal tests |
 | Frontend | Render actual API contract fixtures; unavailable/abstained results, request error/retry, comparison visibility, task preservation; fake MediaRecorder/tracks/timers for manual and automatic stop, one completion, unmount cleanup, delayed permissions and StrictMode |
 | Browser E2E | Fake media and stubbed backend for select task → record → review all modes → feedback → retry → comparison; verify audio-only upload, error recovery, accessibility basics; separate manual supported-browser media smoke test |
-| AI eval/regression | Versioned consented/synthetic corpus, frozen outputs for offline checks, optional budgeted live experiments, human rubric comparison, evidence validity, stability, prompt regressions and intervention quality |
+| AI eval/regression | Versioned consented/synthetic corpus, frozen outputs for offline checks, optional budgeted live experiments, human rubric comparison, evidence validity, input/evidence/feedback status validity, stability, prompt regressions and intervention quality |
 
 ## Critical regressions to encode first
 
@@ -25,6 +25,7 @@ Status: active strategy. Current local evidence is 94 passing backend tests, 23 
 - Two fillers then one filler must survive database round-trip and report a decrease, never an increase.
 - Every caller must see only owned sessions/attempts; forged session IDs must fail before retrieving a baseline.
 - Confidence is never displayed as speaker confidence; unsupported visual categories never appear.
+- Quality statuses must stay honest: completed feedback requires usable/non-unusable input, quote-verified evidence and actionable feedback; abstention requires non-usable-or-limited input, unavailable/insufficient evidence and no scores.
 - A timed-out/invalid evaluation cannot update learner state. Repeated submit/finalize cannot double-count.
 - Recorder automatic stop and cleanup must work independently of stale React closures.
 

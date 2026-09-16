@@ -112,6 +112,9 @@ def test_practice_session_attempt_is_owned_versioned_and_sequence_scoped(client,
     assert evaluation.schema_version == ATTEMPT_RESPONSE_SCHEMA_VERSION
     assert evaluation.rubric_version == RUBRIC_VERSION
     assert evaluation.evaluator_status == "completed"
+    assert evaluation.input_quality == "usable"
+    assert evaluation.evidence_status == "quote_verified"
+    assert evaluation.feedback_status == "actionable"
     assert evaluation.evidence_json == contract["evaluation"]["evidence"]
     assert first.json()["provenance"] == contract["provenance"]
     assert first.json()["intervention"]["target_skill"] == "clarity"

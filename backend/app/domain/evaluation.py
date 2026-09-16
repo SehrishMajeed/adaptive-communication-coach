@@ -5,6 +5,9 @@ Text = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max
 Score = Annotated[float, Field(ge=0, le=10, allow_inf_nan=False, strict=True)]
 Skill = Literal["clarity", "structure", "conciseness", "audience_awareness"]
 EvaluatorStatus = Literal["completed", "abstained"]
+InputQuality = Literal["usable", "limited", "unusable"]
+EvidenceStatus = Literal["quote_verified", "insufficient_evidence", "unavailable"]
+FeedbackStatus = Literal["actionable", "needs_retry", "abstained"]
 
 
 class EvidenceReference(BaseModel):
@@ -18,6 +21,9 @@ class CommunicationEvaluation(BaseModel):
     model_config = ConfigDict(extra="forbid")
     evaluator_status: EvaluatorStatus = "completed"
     abstention_reason: Text | None = None
+    input_quality: InputQuality
+    evidence_status: EvidenceStatus
+    feedback_status: FeedbackStatus
     transcript: Annotated[str, StringConstraints(strip_whitespace=True, max_length=20000)]
     clarity: Score | None = None
     structure: Score | None = None
@@ -38,6 +44,12 @@ class CommunicationEvaluation(BaseModel):
                 raise ValueError("completed evaluation requires all scores")
             if self.abstention_reason is not None:
                 raise ValueError("completed evaluation cannot include abstention_reason")
+            if self.input_quality == "unusable":
+                raise ValueError("completed evaluation cannot mark input unusable")
+            if self.evidence_status != "quote_verified":
+                raise ValueError("completed evaluation requires quote_verified evidence_status")
+            if self.feedback_status != "actionable":
+                raise ValueError("completed evaluation requires actionable feedback_status")
             if not self.evidence:
                 raise ValueError("completed evaluation requires transcript evidence")
             lower_transcript = self.transcript.lower()
@@ -53,4 +65,10 @@ class CommunicationEvaluation(BaseModel):
                 raise ValueError("abstained evaluation cannot include evidence")
             if self.abstention_reason is None:
                 raise ValueError("abstained evaluation requires abstention_reason")
+            if self.input_quality == "usable":
+                raise ValueError("abstained evaluation cannot mark input usable")
+            if self.evidence_status == "quote_verified":
+                raise ValueError("abstained evaluation cannot mark evidence quote_verified")
+            if self.feedback_status != "abstained":
+                raise ValueError("abstained evaluation requires abstained feedback_status")
         return self
