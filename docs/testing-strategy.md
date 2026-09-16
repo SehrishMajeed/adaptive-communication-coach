@@ -26,6 +26,7 @@ Status: active strategy. Current local evidence is 94 passing backend tests, 23 
 - Every caller must see only owned sessions/attempts; forged session IDs must fail before retrieving a baseline.
 - Confidence is never displayed as speaker confidence; unsupported visual categories never appear.
 - Quality statuses must stay honest: completed feedback requires usable/non-unusable input, quote-verified evidence and actionable feedback; abstention requires non-usable-or-limited input, unavailable/insufficient evidence and no scores.
+- Coaching writes must be quality-gated: abstained or limited-quality attempts may persist their result but must not create interventions, complete interventions or create retry comparisons.
 - A timed-out/invalid evaluation cannot update learner state. Repeated submit/finalize cannot double-count.
 - Recorder automatic stop and cleanup must work independently of stale React closures.
 

@@ -142,6 +142,18 @@ def comparison_verdict(delta: float) -> str:
     return "no_clear_change"
 
 
+def evaluation_allows_coaching_write(evaluation) -> bool:
+    recommended_focus = getattr(evaluation, "recommended_focus", None)
+    has_focus = bool(recommended_focus)
+    return (
+        evaluation.evaluator_status == "completed"
+        and evaluation.input_quality == "usable"
+        and evaluation.evidence_status == "quote_verified"
+        and evaluation.feedback_status == "actionable"
+        and has_focus
+    )
+
+
 def intervention_response(intervention: PracticeIntervention | None) -> InterventionResponse | None:
     if intervention is None:
         return None
@@ -223,9 +235,9 @@ def create_intervention_if_possible(
     attempt_id: int,
     evaluation,
 ) -> PracticeIntervention | None:
-    target_skill = evaluation.recommended_focus[0] if evaluation.recommended_focus else None
-    if target_skill is None:
+    if not evaluation_allows_coaching_write(evaluation):
         return None
+    target_skill = evaluation.recommended_focus[0] if evaluation.recommended_focus else None
     intervention = PracticeIntervention(
         session_id=session_id,
         source_attempt_id=attempt_id,
@@ -249,12 +261,17 @@ def create_comparison_if_possible(
     if intervention is None or intervention.source_attempt_id == retry_attempt.id:
         return intervention, None
 
+    if not evaluation_allows_coaching_write(retry_evaluation):
+        return intervention, None
+
     baseline_evaluation = (
         db.query(PracticeEvaluation)
         .filter(PracticeEvaluation.attempt_id == intervention.source_attempt_id)
         .one_or_none()
     )
     if baseline_evaluation is None:
+        return intervention, None
+    if not evaluation_allows_coaching_write(baseline_evaluation):
         return intervention, None
 
     baseline_score = score_for_skill(baseline_evaluation, intervention.target_skill)
@@ -376,7 +393,7 @@ def process_practice_session_attempt(
         if existing:
             existing_measurement = db.query(PracticeMeasurement).filter(PracticeMeasurement.attempt_id == existing.id).one_or_none()
             existing_evaluation = db.query(PracticeEvaluation).filter(PracticeEvaluation.attempt_id == existing.id).one_or_none()
-            if existing.status == "completed" and existing_measurement and existing_evaluation:
+            if existing.status in {"completed", "abstained"} and existing_measurement and existing_evaluation:
                 existing_intervention = (
                     db.query(PracticeIntervention)
                     .filter(PracticeIntervention.source_attempt_id == existing.id)
@@ -405,7 +422,7 @@ def process_practice_session_attempt(
             session_id=session.id,
             sequence_number=next_sequence,
             idempotency_key=idempotency_key,
-            status="completed",
+            status="abstained" if evaluation.evaluator_status == "abstained" else "completed",
             capture_duration_seconds=duration_seconds,
             media_duration_seconds=metrics.duration_seconds,
             transcript=evaluation.transcript,

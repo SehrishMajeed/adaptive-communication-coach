@@ -83,6 +83,8 @@ Do not claim filler absence when transcription may have removed disfluencies. Pe
 
 Current PR 3C implementation records three explicit evaluator quality statuses on every durable practice evaluation: `input_quality`, `evidence_status`, and `feedback_status`. The frontend renders them as visible trust notes so users and reviewers can see whether feedback was actionable, quote-supported, or abstained instead of silently trusting AI output.
 
+Current PR 3D implementation adds the first coaching quality gate: only evaluations with `evaluator_status=completed`, `input_quality=usable`, `evidence_status=quote_verified`, `feedback_status=actionable`, and a supported focus may create interventions or retry comparisons. Abstained or limited-quality attempts can still be saved for review, but they cannot masquerade as coaching progress.
+
 ## Failure and transaction boundaries
 
 - Reject unauthorized or invalid requests before processing; stable error codes distinguish invalid media, unavailable transcription, invalid evaluation, provider timeout and persistence failure. Frontend preserves a retryable local recording when appropriate.

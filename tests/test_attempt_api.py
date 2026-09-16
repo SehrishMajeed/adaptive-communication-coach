@@ -147,6 +147,58 @@ def test_practice_session_retry_comparison_reports_improvement(client, database,
     assert saved.deltas_json["clarity"] == 2
 
 
+def test_quality_gate_blocks_intervention_for_abstained_attempt_and_replays_idempotently(client, database, evaluator, contract):
+    session_id = create_session(client).json()["session_id"]
+    abstained = {
+        **contract["evaluation"],
+        "evaluator_status": "abstained",
+        "abstention_reason": "The audio did not contain enough intelligible speech.",
+        "input_quality": "unusable",
+        "evidence_status": "unavailable",
+        "feedback_status": "abstained",
+        "transcript": "",
+        "clarity": None,
+        "structure": None,
+        "conciseness": None,
+        "audience_awareness": None,
+        "strengths": [],
+        "weaknesses": [],
+        "recommended_focus": [],
+        "evidence": [],
+    }
+    evaluator.return_value = type(evaluator.return_value)(**abstained)
+
+    first = submit_session_attempt(client, session_id, idempotency_key="abstain-key").json()
+    second = submit_session_attempt(client, session_id, idempotency_key="abstain-key").json()
+
+    assert second == first
+    assert first["evaluation"]["evaluator_status"] == "abstained"
+    assert first["intervention"] is None
+    assert first["comparison"] is None
+    assert database.query(PracticeAttempt).one().status == "abstained"
+    assert database.query(PracticeIntervention).count() == 0
+    assert database.query(AttemptComparison).count() == 0
+    assert evaluator.call_count == 1
+
+
+def test_quality_gate_blocks_comparison_for_limited_quality_retry(client, database, evaluator, contract):
+    session_id = create_session(client).json()["session_id"]
+    baseline = submit_session_attempt(client, session_id, idempotency_key="baseline-key").json()
+    limited = contract["evaluation"].copy()
+    limited["input_quality"] = "limited"
+    evaluator.return_value = type(evaluator.return_value)(**limited)
+
+    retry = submit_session_attempt(client, session_id, idempotency_key="limited-retry-key").json()
+
+    assert baseline["intervention"]["target_skill"] == "clarity"
+    assert retry["evaluation"]["input_quality"] == "limited"
+    assert retry["comparison"] is None
+    assert retry["intervention"]["status"] == "assigned"
+    assert database.query(PracticeIntervention).count() == 1
+    assert database.query(PracticeIntervention).one().status == "assigned"
+    assert database.query(AttemptComparison).count() == 0
+
+
 def test_practice_session_attempt_idempotency_returns_existing_completed_attempt(client, database, evaluator):
     session_id = create_session(client).json()["session_id"]
     first = submit_session_attempt(client, session_id, idempotency_key="same-key-123").json()
