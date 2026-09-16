@@ -61,6 +61,7 @@ From the repository root:
 
 ```sh
 python -m pytest tests/
+python backend/scripts/evaluate_agent.py
 alembic upgrade head
 cd frontend
 npm run typecheck
@@ -68,14 +69,14 @@ npm test
 npm run build
 ```
 
-Local verification on Python 3.14.4 / Node 26.4.0: **106 backend tests and 34 frontend tests pass**, and TypeScript/production build pass. Backend tests include actual multipart HTTP requests, real isolated SQLite round-trips, Alembic migration checks, session-scoped attempt APIs, ownership checks, persisted intervention/comparison behavior, evidence validation, abstention validation, offline evaluation fixtures, coaching policy tests and compiled workflow paths with a mocked provider. Frontend tests cover session-scoped upload, practice context visibility, review screen modes, evidence rendering and backend-owned comparison rendering. The SDK emits one deprecation warning on Python 3.14. These are local results, not a claim that remote CI has run.
+Local verification on Python 3.14.4 / Node 26.4.0: **106 backend tests and 34 frontend tests pass**, and TypeScript/production build pass. Backend tests include actual multipart HTTP requests, real isolated SQLite round-trips, Alembic migration checks, session-scoped attempt APIs, ownership checks, persisted intervention/comparison behavior, evidence validation, abstention validation, offline evaluation fixtures, coaching policy tests and compiled workflow paths with a mocked provider. The `evaluate_agent.py` runner validates live LLM integration against a synthetic audio corpus. Frontend tests cover session-scoped upload, practice context visibility, review screen modes, evidence rendering and backend-owned comparison rendering. The SDK emits one deprecation warning on Python 3.14. These are local results, not a claim that remote CI has run.
 
 ## What this demonstrates
 
 - Product development: a narrow, high-pain communication practice loop instead of a generic AI wrapper.
-- AI engineering: versioned prompts, bounded Gemini output, schema validation, timeout control and safe failure behavior.
-- Full-stack execution: React media capture/review, FastAPI validation/persistence and contract tests across backend and frontend.
-- Engineering maturity: privacy boundaries, known limitations, CI, ADRs, roadmap and claim-to-evidence documentation.
+- AI engineering: versioned prompts, bounded Gemini output, schema validation, timeout control, safe failure behavior, and an automated agentic evaluation pipeline.
+- Full-stack execution: React media capture/review, FastAPI validation/persistence, CI/CD automated validation, and contract tests across backend and frontend.
+- Engineering maturity: privacy boundaries, known limitations, GitHub Actions CI, ADRs, roadmap and claim-to-evidence documentation.
 
 For a scholarship, professor or recruiter review path, see [Portfolio case study](docs/portfolio-case-study.md).
 

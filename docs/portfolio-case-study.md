@@ -39,7 +39,7 @@ For a fast review, use this order:
 | Claim | Evidence in repo | Current honesty boundary |
 | --- | --- | --- |
 | Practical AI product | FastAPI backend, React frontend, Gemini provider adapter, structured response schema | Prototype, not production-ready |
-| AI engineering discipline | Versioned prompt builder, schema validation, provider timeout, mocked provider tests | No live reliability benchmark yet |
+| AI engineering discipline | Versioned prompt builder, schema validation, provider timeout, mocked provider tests, automated agentic CI evaluation against golden corpus | No live reliability benchmark yet |
 | Privacy-aware design | Browser records video locally and uploads a separate audio-only WAV | Manual Chrome DevTools verification still pending |
 | Deterministic measurement | Duration, WPM and fillers are computed outside Gemini | Counts depend on transcript fidelity |
 | Product judgment | Narrow technical-explanation wedge and one-priority feedback | Product-market fit is not proven |
@@ -57,6 +57,7 @@ Use only bullets that match the exact current repository state:
 - Designed a focused product loop for technical explanation practice: record, review, receive one target, retry and compare with durable backend-owned session history.
 - Built durable practice sessions with anonymous ownership, session-scoped idempotent attempts, persisted interventions and backend-owned retry comparisons.
 - Authored an Android-first system design covering React Native client architecture, media/privacy boundaries, API evolution, evaluation metrics and Play Store readiness.
+- Built an automated Agentic Evaluation CI Pipeline (`evaluate_agent.py`) to benchmark LLM outputs on latency, abstention, and accuracy against a golden audio corpus without blocking traditional test suites.
 - Wrote backend and frontend regression tests covering media validation, provider failures, API contract shape, recording cleanup and feedback comparison.
 
 Do not claim production scale, personalization, durable agentic memory, Play Store launch, or verified learning outcomes yet.
@@ -85,9 +86,7 @@ This project should communicate:
 The next work should make the prototype harder to dismiss:
 
 1. Finish the Chrome DevTools manual verification checklist with a valid Gemini key.
-2. Build the React Native Android shell (PR 5D) to demonstrate Play Store product direction.
-3. Add device testing, permissions rationale and release build pipeline.
-4. Run a small consented user pilot and report actual completion, retry and trust findings.
+2. Run a small consented user pilot and report actual completion, retry and trust findings.
 
 ## Demo script
 
