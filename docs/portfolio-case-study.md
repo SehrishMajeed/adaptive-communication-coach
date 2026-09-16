@@ -4,7 +4,7 @@
 
 Adaptive Communication Coach is a privacy-aware AI practice loop for technical people who can build something but struggle to explain it clearly to a nontechnical listener.
 
-The current implementation is a web vertical slice. The intended product surface is an Android app for Google Play.
+The current implementation includes a web vertical slice and a hardened React Native Android shell, proving a direct path to Google Play.
 
 ## Why it is impressive
 
@@ -32,7 +32,8 @@ For a fast review, use this order:
 6. `backend/app/services/prompts.py` for versioned prompt control.
 7. `backend/app/domain/metrics.py` and `backend/app/services/media.py` for deterministic measurement and media validation.
 8. `tests/test_attempt_api.py`, `tests/test_evaluation.py`, and `frontend/components/FeedbackScreen.test.tsx` for proof that important claims are tested.
-9. `docs/android-first-system-design.md` for the Android product architecture and release path.
+9. `mobile/` for the React Native Android application architecture, navigation flow, and typed API integration.
+10. `mobile/src/shared/observability/logger.ts` and `.github/workflows/ci.yml` for PII-safe crash reporting boundaries and mobile CI automation.
 
 ## Claim-to-evidence ledger
 
@@ -44,8 +45,8 @@ For a fast review, use this order:
 | Deterministic measurement | Duration, WPM and fillers are computed outside Gemini | Counts depend on transcript fidelity |
 | Product judgment | Narrow technical-explanation wedge and one-priority feedback | Product-market fit is not proven |
 | Durable coaching loop | Session-owned baseline, intervention, retry comparison and coaching workflow routes | Long-term profile updates are not implemented yet |
-| Software engineering quality | 106 backend tests, 34 frontend tests, typecheck, build, CI workflow | Dependencies are not fully locked for production |
-| Android-first product direction | Android system design, API evolution plan, Play Store readiness notes | Android app is not implemented yet |
+| Software engineering quality | 106 backend tests, 34 frontend tests, mobile Jest tests, rigorous typecheck, build, and automated mobile CI workflow | Dependencies are not fully locked for production |
+| Android-first product direction | React Native Android app shell (`mobile/`), typed API clients, accessibility (a11y) roles, and safe observability logger | Android app is not published to Play Store yet |
 
 ## Resume bullets
 
@@ -56,9 +57,10 @@ Use only bullets that match the exact current repository state:
 - Added deterministic speech metrics for duration, word count, WPM and filler candidates, keeping measurable values outside the LLM.
 - Designed a focused product loop for technical explanation practice: record, review, receive one target, retry and compare with durable backend-owned session history.
 - Built durable practice sessions with anonymous ownership, session-scoped idempotent attempts, persisted interventions and backend-owned retry comparisons.
-- Authored an Android-first system design covering React Native client architecture, media/privacy boundaries, API evolution, evaluation metrics and Play Store readiness.
+- Implemented a complete React Native Android application shell encompassing the full coaching loop, including device camera permissions, local replay, and typed API clients.
+- Hardened the Android application for production release with an automated GitHub Actions CI pipeline, extensive accessibility (a11y) properties, and a PII-safe observability logging boundary.
 - Built an automated Agentic Evaluation CI Pipeline (`evaluate_agent.py`) to benchmark LLM outputs on latency, abstention, and accuracy against a golden audio corpus without blocking traditional test suites.
-- Wrote backend and frontend regression tests covering media validation, provider failures, API contract shape, recording cleanup and feedback comparison.
+- Wrote backend, frontend, and mobile regression tests covering media validation, provider failures, API contract shape, recording cleanup and feedback comparison.
 
 Do not claim production scale, personalization, durable agentic memory, Play Store launch, or verified learning outcomes yet.
 

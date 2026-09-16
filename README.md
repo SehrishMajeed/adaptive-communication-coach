@@ -20,7 +20,9 @@ See the [documentation index](docs/README.md) for the target architecture and [h
 
 ## Android-first direction
 
-The current web app is the technical proof. The product target is an Android app for Google Play that reuses the same backend contracts and keeps the loop narrow: record a technical explanation, review privately, receive one target, retry and compare. The Android plan is documented in [Android-first system design](docs/android-first-system-design.md), the operating standards are in [Engineering practices](docs/engineering-practices.md), and the next PR sequence is in [Implementation and system design plan](docs/implementation-system-design-plan.md).
+The web app served as the technical proof, but the core product surface is the newly implemented React Native Android app (`mobile/`). This application reuses the exact same API contracts and keeps the loop narrow: record a technical explanation, review privately, receive one target, retry and compare. 
+
+The Android plan is documented in [Android-first system design](docs/android-first-system-design.md), the operating standards are in [Engineering practices](docs/engineering-practices.md), and the executed PR sequence is in [Implementation and system design plan](docs/implementation-system-design-plan.md).
 
 ## Local development
 
@@ -67,16 +69,19 @@ cd frontend
 npm run typecheck
 npm test
 npm run build
+cd ../mobile
+npm run typecheck
+npm test
 ```
 
-Local verification on Python 3.14.4 / Node 26.4.0: **106 backend tests and 34 frontend tests pass**, and TypeScript/production build pass. Backend tests include actual multipart HTTP requests, real isolated SQLite round-trips, Alembic migration checks, session-scoped attempt APIs, ownership checks, persisted intervention/comparison behavior, evidence validation, abstention validation, offline evaluation fixtures, coaching policy tests and compiled workflow paths with a mocked provider. The `evaluate_agent.py` runner validates live LLM integration against a synthetic audio corpus. Frontend tests cover session-scoped upload, practice context visibility, review screen modes, evidence rendering and backend-owned comparison rendering. The SDK emits one deprecation warning on Python 3.14. These are local results, not a claim that remote CI has run.
+Local verification on Python 3.14.4 / Node 26.4.0: **106 backend tests, 34 frontend tests, and the mobile test suite pass**, and TypeScript/production builds pass. Backend tests include actual multipart HTTP requests, real isolated SQLite round-trips, Alembic migration checks, session-scoped attempt APIs, ownership checks, persisted intervention/comparison behavior, evidence validation, abstention validation, offline evaluation fixtures, coaching policy tests and compiled workflow paths with a mocked provider. The `evaluate_agent.py` runner validates live LLM integration against a synthetic audio corpus. Frontend tests cover session-scoped upload, practice context visibility, review screen modes, evidence rendering and backend-owned comparison rendering. Mobile tests cover the React Native rendering and navigation boundaries. The SDK emits one deprecation warning on Python 3.14. These are local results, but automated testing occurs via GitHub Actions (`.github/workflows/ci.yml`).
 
 ## What this demonstrates
 
 - Product development: a narrow, high-pain communication practice loop instead of a generic AI wrapper.
 - AI engineering: versioned prompts, bounded Gemini output, schema validation, timeout control, safe failure behavior, and an automated agentic evaluation pipeline.
-- Full-stack execution: React media capture/review, FastAPI validation/persistence, CI/CD automated validation, and contract tests across backend and frontend.
-- Engineering maturity: privacy boundaries, known limitations, GitHub Actions CI, ADRs, roadmap and claim-to-evidence documentation.
+- Full-stack execution: React/React Native media capture/review, FastAPI validation/persistence, GitHub Actions CI/CD automated validation, and contract tests across backend, web frontend, and mobile.
+- Engineering maturity: privacy boundaries, crash reporting boundaries, accessibility (a11y) roles, known limitations, ADRs, roadmap and claim-to-evidence documentation.
 
 For a scholarship, professor or recruiter review path, see [Portfolio case study](docs/portfolio-case-study.md).
 
