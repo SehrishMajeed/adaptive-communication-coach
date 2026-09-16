@@ -1,5 +1,6 @@
 import { Platform } from 'react-native';
 import { parsePracticeAttemptHistory, parsePracticeAttemptResult, PracticeAttemptHistory, PracticeAttemptResult, PracticeSetup } from '../../../shared/types';
+import { logger } from '../shared/observability/logger';
 import type { Recording } from './recording';
 import { getOwnerToken } from './ownerToken';
 
@@ -29,9 +30,15 @@ export const createPracticeSession = async (setup: PracticeSetup = defaultSetup)
     headers: { 'Content-Type': 'application/json', 'X-Owner-Token': token },
     body: JSON.stringify(setup),
   });
-  if (!response.ok) throw new Error('The backend could not create a practice session. Please try again.');
+  if (!response.ok) {
+    logger.error(`Failed to create practice session (Status ${response.status})`);
+    throw new Error('The backend could not create a practice session. Please try again.');
+  }
   const body = await response.json();
-  if (!body || typeof body.session_id !== 'number') throw new Error('The backend returned an invalid session. Please try again.');
+  if (!body || typeof body.session_id !== 'number') {
+    logger.error('Invalid session_id returned from API');
+    throw new Error('The backend returned an invalid session. Please try again.');
+  }
   return body.session_id;
 };
 
@@ -72,6 +79,7 @@ export const analyzeRecording = async (recording: Recording, sessionId?: number 
     if (controller.signal.aborted || error instanceof TypeError) {
       throw new Error('The request could not finish. Check your connection and try again.');
     }
+    logger.error(error instanceof Error ? error.message : String(error), { audioUri: recording.audioUri, sessionId: activeSessionId });
     throw error;
   } finally { clearTimeout(timeout); }
 };
@@ -82,7 +90,10 @@ export const fetchPracticeSessionHistory = async (sessionId: number): Promise<Pr
     method: 'GET',
     headers: { 'X-Owner-Token': token },
   });
-  if (!response.ok) throw new Error('The backend could not load this session history.');
+  if (!response.ok) {
+    logger.error(`Failed to load session history (Status ${response.status})`, { sessionId });
+    throw new Error('The backend could not load this session history.');
+  }
   try { return parsePracticeAttemptHistory(await response.json()); }
   catch { throw new Error('The backend returned invalid session history.'); }
 };

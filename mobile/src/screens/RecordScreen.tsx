@@ -72,11 +72,23 @@ export const RecordScreen: React.FC<Props> = ({ navigation, route }) => {
         
         <View style={styles.controls}>
           {isRecording ? (
-            <TouchableOpacity style={styles.stopButton} onPress={handleStopRecording}>
+            <TouchableOpacity 
+              style={styles.stopButton} 
+              onPress={handleStopRecording}
+              accessibilityRole="button"
+              accessibilityLabel="Stop Recording"
+              accessibilityHint="Stops the camera recording and proceeds to review"
+            >
               <View style={styles.stopSquare} />
             </TouchableOpacity>
           ) : (
-            <TouchableOpacity style={styles.recordButton} onPress={handleStartRecording}>
+            <TouchableOpacity 
+              style={styles.recordButton} 
+              onPress={handleStartRecording}
+              accessibilityRole="button"
+              accessibilityLabel="Start Recording"
+              accessibilityHint="Starts recording your practice session"
+            >
               <View style={styles.recordCircle} />
             </TouchableOpacity>
           )}

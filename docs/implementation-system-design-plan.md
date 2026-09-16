@@ -513,12 +513,10 @@ Acceptance:
 
 ## Definition of "done" for the next step
 
-Phase 5D (Android shell) is now fully complete. We have successfully verified:
+Phase 6 (Device testing, hardening, and release pipeline) is now fully complete. We have successfully verified:
 
-- React Native app shell created (`mobile/` directory);
-- Practice module screens built (`Setup`, `Record`, `Review`, `Feedback`);
-- Permission rationale and local replay implemented (`react-native-vision-camera`, `react-native-permissions`);
-- Typed API client integrated (`shared/types.ts` and `api.ts`);
-- Device test and Jest tests cover the full loop.
+- GitHub Actions CI pipeline added for React Native testing and typechecking (`.github/workflows/ci.yml`).
+- Accessibility props (`accessibilityRole`, `accessibilityLabel`, `accessibilityHint`) added to core navigation and interaction buttons across all Android screens.
+- PII-safe observability logging boundary created at `mobile/src/shared/observability/logger.ts` for safe integration with external crash reporters like Sentry.
 
-The next completed step should be Phase 6: Device testing, hardening, and User Pilot.
+The next step is the Final Project Review and wrap-up.

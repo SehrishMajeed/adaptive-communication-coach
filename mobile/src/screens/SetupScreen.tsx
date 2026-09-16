@@ -34,7 +34,13 @@ export const SetupScreen: React.FC<Props> = ({ navigation }) => {
 
         <View style={styles.spacer} />
 
-        <TouchableOpacity style={styles.button} onPress={handleStart}>
+        <TouchableOpacity 
+          style={styles.button} 
+          onPress={handleStart}
+          accessibilityRole="button"
+          accessibilityLabel="Start Practice"
+          accessibilityHint="Navigates to the recording screen after permissions are granted"
+        >
           <Text style={styles.buttonText}>Start Practice</Text>
         </TouchableOpacity>
       </View>

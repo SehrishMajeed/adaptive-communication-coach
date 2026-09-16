@@ -40,10 +40,22 @@ export const ReviewScreen: React.FC<Props> = ({ navigation, route }) => {
         resizeMode="contain"
       />
       <View style={styles.controls}>
-        <TouchableOpacity style={styles.retakeButton} onPress={handleRetake}>
+        <TouchableOpacity 
+          style={styles.retakeButton} 
+          onPress={handleRetake}
+          accessibilityRole="button"
+          accessibilityLabel="Retake Video"
+          accessibilityHint="Discards this recording and goes back to the camera"
+        >
           <Text style={styles.retakeText}>Retake</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
+        <TouchableOpacity 
+          style={styles.submitButton} 
+          onPress={handleSubmit}
+          accessibilityRole="button"
+          accessibilityLabel="Submit for Feedback"
+          accessibilityHint="Uploads the recording to receive AI feedback"
+        >
           <Text style={styles.submitText}>Submit for Feedback</Text>
         </TouchableOpacity>
       </View>

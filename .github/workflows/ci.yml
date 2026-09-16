@@ -41,3 +41,18 @@ jobs:
       run: cd frontend && npm test
     - name: Build
       run: cd frontend && npm run build
+
+  build-mobile:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Use Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '22.22.2'
+    - name: Install dependencies
+      run: cd mobile && npm ci
+    - name: Typecheck
+      run: cd mobile && npx tsc --noEmit
+    - name: Test
+      run: cd mobile && npm test

@@ -36,6 +36,9 @@ export const FeedbackScreen: React.FC<Props> = ({ navigation, route }) => {
         <TouchableOpacity 
           style={styles.doneButton} 
           onPress={() => navigation.navigate('Setup')}
+          accessibilityRole="button"
+          accessibilityLabel="Done"
+          accessibilityHint="Returns to the Setup screen"
         >
           <Text style={styles.doneText}>Done</Text>
         </TouchableOpacity>
