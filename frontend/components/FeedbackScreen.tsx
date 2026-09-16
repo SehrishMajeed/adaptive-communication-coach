@@ -1,7 +1,9 @@
 import React from 'react';
-import { AIFeedback, BackendComparison, BackendWorkflow, PracticeAttemptResult } from '../types';
+import { AIFeedback, BackendComparison, BackendWorkflow, PracticeAttemptResult, PracticeSetup } from '../types';
+import PracticeContextCard from './PracticeContextCard';
 
 interface FeedbackScreenProps {
+  setup?: PracticeSetup | null;
   feedback: AIFeedback;
   workflow?: BackendWorkflow | null;
   comparison?: BackendComparison | null;
@@ -122,7 +124,7 @@ const HistoryPanel: React.FC<{ history: PracticeAttemptResult[] }> = ({ history 
   );
 };
 
-const FeedbackScreen: React.FC<FeedbackScreenProps> = ({ feedback, workflow, comparison, history = [], onRetrySame, onRestart }) => {
+const FeedbackScreen: React.FC<FeedbackScreenProps> = ({ setup, feedback, workflow, comparison, history = [], onRetrySame, onRestart }) => {
   const primaryFocus = feedback.evaluation.recommended_focus[0];
   const drill = primaryFocus ? focusDrills[primaryFocus] : 'Retry the explanation with a clearer opening sentence.';
   const backendDeltas = comparison?.deltas ?? {};
@@ -132,6 +134,9 @@ const FeedbackScreen: React.FC<FeedbackScreenProps> = ({ feedback, workflow, com
     <div className="w-full p-6 bg-gray-800/50 rounded-2xl shadow-2xl border border-gray-700 backdrop-blur-sm animate-fade-in">
       <h2 className="text-3xl font-bold text-center mb-2">Your One Practice Target</h2>
       <p className="text-lg text-center text-gray-400 mb-6">AI suggestions for this attempt — not verified progress.</p>
+      <div className="mb-6 flex justify-center">
+        <PracticeContextCard setup={setup} compact />
+      </div>
 
       <div className="mb-6 bg-gray-900/60 p-4 rounded-lg border border-gray-700">
         <h3 className="text-lg font-semibold mb-2">Trust notes</h3>

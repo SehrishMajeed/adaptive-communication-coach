@@ -465,7 +465,27 @@ Acceptance:
 - Session context is explicit before recording.
 - The setup contract matches the backend `PracticeSessionCreate` schema.
 
-### PR 5C: Android shell
+### Phase 5C: context visibility across web flow
+
+Deliver:
+
+- Show selected scenario, audience and goal on recording, review and feedback screens.
+- Keep the context compact so it reinforces the task without becoming a dashboard.
+- Preserve the same setup contract that Android will reuse.
+
+Implementation status:
+
+- `PracticeContextCard` renders the selected scenario, audience, goal and target duration.
+- `App` passes setup through recording, review and feedback.
+- Frontend tests cover context visibility across the web flow.
+
+Acceptance:
+
+- Users never lose sight of who they are speaking to and what outcome they are practicing.
+- Reviewers can see the product is scenario-aware before the Android shell starts.
+- The visible context matches the backend-owned session setup.
+
+### PR 5D: Android shell
 
 Deliver:
 
@@ -493,12 +513,12 @@ Acceptance:
 
 ## Definition of "done" for the next step
 
-The next completed step should be PR 2A:
+Phase 5C (context visibility across the web flow) is now fully complete, including full test coverage across all affected screens (Welcome, Recording, Review, and Feedback).
 
-- migration system added;
-- durable Phase 2 schema added;
-- constraints tested;
-- old endpoint still passing;
-- docs updated with exact commands and test receipts.
+The next completed step should be PR 5D: Android shell:
 
-Do not start broad Android UI work until this backend foundation exists.
+- React Native app shell created;
+- Practice module screens built;
+- Permission rationale and local replay implemented;
+- Typed API client integrated;
+- Device test covers the full loop.

@@ -3,6 +3,13 @@ import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import RecordingScreen from './RecordingScreen';
 
+const setup = {
+  scenario: 'Explain the AI coaching architecture.',
+  audience: 'scholarship professor',
+  goal: 'show practical AI engineering judgment',
+  requested_duration_seconds: 60,
+};
+
 const stream = () => {
   const tracks = [{ kind: 'audio', stop: vi.fn() }, { kind: 'video', stop: vi.fn() }];
   return { getTracks: () => tracks, getAudioTracks: () => [tracks[0]] } as unknown as MediaStream;
@@ -52,6 +59,16 @@ it('permission failure offers a working retry', async () => {
   expect(screen.queryByText('private')).not.toBeInTheDocument();
   fireEvent.click(screen.getByText('Try Again'));
   await waitFor(() => expect(screen.getByText('Start Recording')).toBeEnabled());
+});
+
+it('keeps the selected setup visible while recording', async () => {
+  vi.stubGlobal('navigator', { mediaDevices: { getUserMedia: vi.fn().mockResolvedValue(stream()) } });
+  render(<RecordingScreen setup={setup} onRecordingComplete={vi.fn()} />);
+  await waitFor(() => expect(screen.getByText('Start Recording')).toBeEnabled());
+  expect(screen.getByText(setup.scenario)).toBeInTheDocument();
+  expect(screen.getByText(setup.audience)).toBeInTheDocument();
+  expect(screen.getByText(setup.goal)).toBeInTheDocument();
+  expect(screen.getByText('Record for the selected 60-second target.')).toBeInTheDocument();
 });
 
 it('active unmount cancels capture, clears timers and releases tracks', async () => {

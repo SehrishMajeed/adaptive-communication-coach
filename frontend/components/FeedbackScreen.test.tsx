@@ -6,14 +6,24 @@ import { parseFeedback, parsePracticeAttemptResult } from '../types';
 import FeedbackScreen from './FeedbackScreen';
 import ReviewScreen from './ReviewScreen';
 
+const setup = {
+  scenario: 'Explain the AI coaching architecture.',
+  audience: 'scholarship professor',
+  goal: 'show practical AI engineering judgment',
+  requested_duration_seconds: 60,
+};
+
 it('renders the exact HTTP contract checked by backend tests', () => {
-  render(<FeedbackScreen feedback={parseFeedback(contract)} workflow={{
+  render(<FeedbackScreen setup={setup} feedback={parseFeedback(contract)} workflow={{
     route: 'baseline',
     reason: 'first_eligible_attempt',
     creates_intervention: true,
     creates_comparison: false,
   }} onRetrySame={vi.fn()} onRestart={vi.fn()} />);
   expect(screen.getByText('Clear introduction')).toBeInTheDocument();
+  expect(screen.getByText(setup.scenario)).toBeInTheDocument();
+  expect(screen.getByText(setup.audience)).toBeInTheDocument();
+  expect(screen.getByText(setup.goal)).toBeInTheDocument();
   expect(screen.getByText('Audience adaptation')).toBeInTheDocument();
   expect(screen.queryByText('Confidence')).not.toBeInTheDocument();
   expect(screen.queryByText('Engagement')).not.toBeInTheDocument();
@@ -103,8 +113,11 @@ it('keeps review, retry and all three perspectives available after failure', () 
   vi.stubGlobal('URL', { createObjectURL: () => 'blob:local', revokeObjectURL: revoke });
   const pause = vi.spyOn(HTMLMediaElement.prototype, 'pause').mockImplementation(() => {});
   const retry = vi.fn();
-  const { container, unmount } = render(<ReviewScreen videoBlob={new Blob(['local-video'])} onAnalyze={retry} onRestart={vi.fn()} error="Evaluation failed. Try again." />);
+  const { container, unmount } = render(<ReviewScreen setup={setup} videoBlob={new Blob(['local-video'])} onAnalyze={retry} onRestart={vi.fn()} error="Evaluation failed. Try again." />);
   expect(screen.getByRole('alert')).toHaveTextContent('Evaluation failed');
+  expect(screen.getByText(setup.scenario)).toBeInTheDocument();
+  expect(screen.getByText(setup.audience)).toBeInTheDocument();
+  expect(screen.getByText(setup.goal)).toBeInTheDocument();
   fireEvent.click(screen.getByText('Presence Review (Local Video)'));
   expect(container.querySelector('video')?.muted).toBe(true);
   fireEvent.click(screen.getByText('Voice Review (Audio Only)'));

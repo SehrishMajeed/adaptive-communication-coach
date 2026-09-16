@@ -1,11 +1,14 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Recording, startCapture } from '../services/recording';
+import { PracticeSetup } from '../types';
+import PracticeContextCard from './PracticeContextCard';
 
 interface RecordingScreenProps {
+  setup?: PracticeSetup | null;
   onRecordingComplete: (recording: Recording) => void;
 }
 
-const RecordingScreen: React.FC<RecordingScreenProps> = ({ onRecordingComplete }) => {
+const RecordingScreen: React.FC<RecordingScreenProps> = ({ setup, onRecordingComplete }) => {
   const [stage, setStage] = useState<'loading' | 'ready' | 'recording' | 'stopping' | 'error'>('loading');
   const [remaining, setRemaining] = useState(60);
   const [retry, setRetry] = useState(0);
@@ -56,6 +59,7 @@ const RecordingScreen: React.FC<RecordingScreenProps> = ({ onRecordingComplete }
 
   return (
     <div className="w-full flex flex-col items-center">
+      <PracticeContextCard setup={setup} compact />
       <div className="relative w-full max-w-2xl aspect-video bg-gray-950 rounded-lg overflow-hidden shadow-2xl border border-gray-700">
         <video ref={video} autoPlay muted playsInline className="w-full h-full object-cover transform scale-x-[-1]" />
         {stage === 'recording' && <span className="absolute top-4 right-4 bg-black/50 px-3 py-1 rounded font-mono">{remaining}s</span>}
@@ -72,7 +76,7 @@ const RecordingScreen: React.FC<RecordingScreenProps> = ({ onRecordingComplete }
           {stage === 'recording' ? 'Stop Recording' : stage === 'stopping' ? 'Finishing recording…' : stage === 'loading' ? 'Waiting for camera and microphone…' : 'Start Recording'}
         </button>
       )}
-      <p className="mt-4 text-gray-400">Explain a technical project to a non-technical person. Recording stops after 60 seconds.</p>
+      <p className="mt-4 text-gray-400">{setup ? `Record for the selected ${setup.requested_duration_seconds}-second target.` : 'Explain a technical project to a non-technical person. Recording stops after 60 seconds.'}</p>
       <p className="mt-2 text-sm text-gray-400">Record at least 1 second. Video stays local for review; audio is sent for evaluation when you choose Get AI Feedback.</p>
     </div>
   );

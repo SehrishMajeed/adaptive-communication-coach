@@ -78,13 +78,13 @@ const App: React.FC = () => {
       case AppState.WELCOME:
         return <WelcomeScreen onStart={handleStart} />;
       case AppState.RECORDING:
-        return <RecordingScreen onRecordingComplete={handleRecordingComplete} />;
+        return <RecordingScreen setup={setup} onRecordingComplete={handleRecordingComplete} />;
       case AppState.REVIEW:
-        return <ReviewScreen videoBlob={recording!.videoBlob} onAnalyze={handleAnalysis} error={error} onRestart={handleRestart} />;
+        return <ReviewScreen setup={setup} videoBlob={recording!.videoBlob} onAnalyze={handleAnalysis} error={error} onRestart={handleRestart} />;
       case AppState.ANALYZING:
         return <Loader />;
       case AppState.FEEDBACK:
-        return <FeedbackScreen feedback={feedback!} workflow={workflow} comparison={comparison} history={history} onRetrySame={handleRetrySameExplanation} onRestart={handleRestart} />;
+        return <FeedbackScreen setup={setup} feedback={feedback!} workflow={workflow} comparison={comparison} history={history} onRetrySame={handleRetrySameExplanation} onRestart={handleRestart} />;
       default:
         return <WelcomeScreen onStart={handleStart} />;
     }

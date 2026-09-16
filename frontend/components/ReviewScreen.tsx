@@ -1,8 +1,10 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { ReviewMode } from '../types';
+import { PracticeSetup, ReviewMode } from '../types';
+import PracticeContextCard from './PracticeContextCard';
 
 interface ReviewScreenProps {
+  setup?: PracticeSetup | null;
   videoBlob: Blob;
   onAnalyze: () => void;
   onRestart: () => void;
@@ -15,7 +17,7 @@ const modeConfig = {
     [ReviewMode.AUDIO_ONLY]: { title: 'Voice Review (Audio Only)', description: 'Listen without video. Notice clarity, structure, pace, and filler words before asking for AI suggestions.' }
 };
 
-const ReviewScreen: React.FC<ReviewScreenProps> = ({ videoBlob, onAnalyze, onRestart, error }) => {
+const ReviewScreen: React.FC<ReviewScreenProps> = ({ setup, videoBlob, onAnalyze, onRestart, error }) => {
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [reviewMode, setReviewMode] = useState<ReviewMode>(ReviewMode.FULL);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -40,6 +42,9 @@ const ReviewScreen: React.FC<ReviewScreenProps> = ({ videoBlob, onAnalyze, onRes
     <div className="w-full flex flex-col items-center">
       <h2 className="text-3xl font-bold mb-4">Review Before AI Feedback</h2>
       <p className="text-gray-400 mb-6">First notice what did or did not land. Then ask for one evidence-based improvement target.</p>
+      <div className="mb-6 w-full flex justify-center">
+        <PracticeContextCard setup={setup} compact />
+      </div>
 
       <div className="w-full max-w-2xl flex flex-col md:flex-row gap-6">
         <div className="flex-grow">

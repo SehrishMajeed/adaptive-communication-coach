@@ -68,7 +68,7 @@ npm test
 npm run build
 ```
 
-Local verification on Python 3.14.4 / Node 26.4.0: **94 backend tests and 23 frontend tests pass**, and TypeScript/production build pass. Backend tests include actual multipart HTTP requests, real isolated SQLite round-trips, Alembic migration checks, session-scoped attempt APIs, ownership checks, persisted intervention/comparison behavior, evidence validation, abstention validation, offline evaluation fixtures and compiled workflow paths with a mocked provider. Frontend tests cover session-scoped upload, evidence rendering and backend-owned comparison rendering. The SDK emits one deprecation warning on Python 3.14. These are local results, not a claim that remote CI has run.
+Local verification on Python 3.14.4 / Node 26.4.0: **106 backend tests and 34 frontend tests pass**, and TypeScript/production build pass. Backend tests include actual multipart HTTP requests, real isolated SQLite round-trips, Alembic migration checks, session-scoped attempt APIs, ownership checks, persisted intervention/comparison behavior, evidence validation, abstention validation, offline evaluation fixtures, coaching policy tests and compiled workflow paths with a mocked provider. Frontend tests cover session-scoped upload, practice context visibility, review screen modes, evidence rendering and backend-owned comparison rendering. The SDK emits one deprecation warning on Python 3.14. These are local results, not a claim that remote CI has run.
 
 ## What this demonstrates
 

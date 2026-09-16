@@ -99,6 +99,8 @@ Current Phase 5A implementation uses that endpoint from the React prototype and 
 
 Current Phase 5B implementation adds explicit scenario, audience and goal setup to the React welcome flow. The client sends those fields when creating a practice session, so the backend no longer treats the web loop as a fixed-demo scenario.
 
+Current Phase 5C implementation renders the selected scenario, audience, goal and target duration on recording, review and feedback screens. This makes the backend session context visible throughout the product loop and gives Android a concrete UX reference.
+
 ## Failure and transaction boundaries
 
 - Reject unauthorized or invalid requests before processing; stable error codes distinguish invalid media, unavailable transcription, invalid evaluation, provider timeout and persistence failure. Frontend preserves a retryable local recording when appropriate.
