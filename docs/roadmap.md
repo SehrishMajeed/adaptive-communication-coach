@@ -36,6 +36,7 @@ These nine phases supersede the earlier phase numbering. The audit is complete p
 - Deliverables: conditional validate/measure/evaluate/evidence/diagnose/intervene/compare/update workflow; one persisted target and actionable exercise; comparable retry outcomes; eligibility-gated interpretable profile updates; adapt an exercise when the target does not improve.
 - Dependencies: Phases 2–3 ownership, provenance and reliable outcome signals.
 - Acceptance: baseline, invalid input, abstention, improved retry and non-improved retry routes are distinguishable; comparison uses the assigned target; repeated processing is idempotent; insufficient evidence does not masquerade as progress.
+- Current implementation note: Phase 4A extracts the coaching write gate, target selection adapter, deterministic drill map and comparison verdict thresholds into `backend/app/domain/coaching.py`.
 - Tests: compiled graph scenarios with fake providers, target tie-breaks, incompatible contexts, profile gating/rebuild and baseline-to-retry API integration.
 - Non-goals: multiple agents, reinforcement learning, elaborate cognitive diagnosis or claiming causal intervention effects without a study.
 

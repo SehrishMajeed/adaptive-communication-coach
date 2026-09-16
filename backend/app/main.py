@@ -16,6 +16,7 @@ from sqlalchemy.orm import Session
 load_dotenv()
 
 from .agent.graph import build_coaching_graph
+from .domain.coaching import DRILLS, DRILL_VERSION, coaching_write_eligibility, comparison_verdict
 from .models.database import (
     CoachingAttempt,
     CoachingSession,
@@ -121,37 +122,8 @@ def evaluation_provenance() -> EvaluationProvenance:
     )
 
 
-DRILL_VERSION = "technical-explanation-drills-v1"
-DRILLS = {
-    "clarity": "Say the main idea in one plain sentence before adding details.",
-    "structure": "Use this order: problem, what you built, result, why it matters.",
-    "conciseness": "Cut one side detail and keep only what helps the listener decide.",
-    "audience_awareness": "Replace one technical term with the listener-facing benefit.",
-}
-
-
 def score_for_skill(evaluation: PracticeEvaluation, skill: str) -> float | None:
     return getattr(evaluation, skill)
-
-
-def comparison_verdict(delta: float) -> str:
-    if delta >= 1:
-        return "improved"
-    if delta <= -1:
-        return "regressed"
-    return "no_clear_change"
-
-
-def evaluation_allows_coaching_write(evaluation) -> bool:
-    recommended_focus = getattr(evaluation, "recommended_focus", None)
-    has_focus = bool(recommended_focus)
-    return (
-        evaluation.evaluator_status == "completed"
-        and evaluation.input_quality == "usable"
-        and evaluation.evidence_status == "quote_verified"
-        and evaluation.feedback_status == "actionable"
-        and has_focus
-    )
 
 
 def intervention_response(intervention: PracticeIntervention | None) -> InterventionResponse | None:
@@ -235,15 +207,15 @@ def create_intervention_if_possible(
     attempt_id: int,
     evaluation,
 ) -> PracticeIntervention | None:
-    if not evaluation_allows_coaching_write(evaluation):
+    eligibility = coaching_write_eligibility(evaluation)
+    if not eligibility.allowed:
         return None
-    target_skill = evaluation.recommended_focus[0] if evaluation.recommended_focus else None
     intervention = PracticeIntervention(
         session_id=session_id,
         source_attempt_id=attempt_id,
-        target_skill=target_skill,
+        target_skill=eligibility.target_skill,
         drill_version=DRILL_VERSION,
-        drill_text=DRILLS[target_skill],
+        drill_text=DRILLS[eligibility.target_skill],
         status="assigned",
     )
     db.add(intervention)
@@ -261,7 +233,7 @@ def create_comparison_if_possible(
     if intervention is None or intervention.source_attempt_id == retry_attempt.id:
         return intervention, None
 
-    if not evaluation_allows_coaching_write(retry_evaluation):
+    if not coaching_write_eligibility(retry_evaluation).allowed:
         return intervention, None
 
     baseline_evaluation = (
@@ -271,7 +243,7 @@ def create_comparison_if_possible(
     )
     if baseline_evaluation is None:
         return intervention, None
-    if not evaluation_allows_coaching_write(baseline_evaluation):
+    if not coaching_write_eligibility(baseline_evaluation).allowed:
         return intervention, None
 
     baseline_score = score_for_skill(baseline_evaluation, intervention.target_skill)

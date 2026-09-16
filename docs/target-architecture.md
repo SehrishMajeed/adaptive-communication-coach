@@ -85,6 +85,8 @@ Current PR 3C implementation records three explicit evaluator quality statuses o
 
 Current PR 3D implementation adds the first coaching quality gate: only evaluations with `evaluator_status=completed`, `input_quality=usable`, `evidence_status=quote_verified`, `feedback_status=actionable`, and a supported focus may create interventions or retry comparisons. Abstained or limited-quality attempts can still be saved for review, but they cannot masquerade as coaching progress.
 
+Current Phase 4A implementation moves this decision into `backend/app/domain/coaching.py`. The API route still owns HTTP, authorization and database writes, but the coaching engine now owns eligibility, target extraction, deterministic drill mapping and comparison verdict thresholds.
+
 ## Failure and transaction boundaries
 
 - Reject unauthorized or invalid requests before processing; stable error codes distinguish invalid media, unavailable transcription, invalid evaluation, provider timeout and persistence failure. Frontend preserves a retryable local recording when appropriate.

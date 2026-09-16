@@ -1,0 +1,56 @@
+from types import SimpleNamespace
+
+from backend.app.domain.coaching import (
+    DRILLS,
+    coaching_write_eligibility,
+    comparison_verdict,
+    target_skill_for_evaluation,
+)
+
+
+def evaluation(**overrides):
+    fields = {
+        "evaluator_status": "completed",
+        "input_quality": "usable",
+        "evidence_status": "quote_verified",
+        "feedback_status": "actionable",
+        "recommended_focus": ["clarity"],
+    }
+    fields.update(overrides)
+    return SimpleNamespace(**fields)
+
+
+def test_coaching_write_policy_allows_only_usable_quote_verified_actionable_feedback():
+    result = coaching_write_eligibility(evaluation())
+    assert result.allowed is True
+    assert result.reason == "eligible"
+    assert result.target_skill == "clarity"
+    assert DRILLS[result.target_skill] == "Say the main idea in one plain sentence before adding details."
+
+
+def test_coaching_write_policy_blocks_abstained_or_low_quality_feedback():
+    cases = [
+        ({"evaluator_status": "abstained"}, "evaluation_not_completed"),
+        ({"input_quality": "limited"}, "input_not_usable"),
+        ({"evidence_status": "insufficient_evidence"}, "evidence_not_quote_verified"),
+        ({"feedback_status": "needs_retry"}, "feedback_not_actionable"),
+        ({"recommended_focus": []}, "missing_focus"),
+    ]
+    for update, reason in cases:
+        result = coaching_write_eligibility(evaluation(**update))
+        assert result.allowed is False
+        assert result.reason == reason
+        assert result.target_skill is None
+
+
+def test_target_skill_policy_supports_pydantic_and_persisted_evaluations():
+    assert target_skill_for_evaluation(evaluation(recommended_focus=["structure"])) == "structure"
+    assert target_skill_for_evaluation(evaluation(recommended_focus="conciseness")) == "conciseness"
+    assert target_skill_for_evaluation(evaluation(recommended_focus=[])) is None
+
+
+def test_comparison_verdict_thresholds_are_domain_policy():
+    assert comparison_verdict(1) == "improved"
+    assert comparison_verdict(0.9) == "no_clear_change"
+    assert comparison_verdict(-0.9) == "no_clear_change"
+    assert comparison_verdict(-1) == "regressed"

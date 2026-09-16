@@ -325,7 +325,26 @@ Acceptance:
 - Abstention fixture has no scores, evidence or recommended focus.
 - The docs do not claim live-model quality or human agreement.
 
-### PR 4A: Android shell
+### Phase 4A: domain coaching policy
+
+Deliver:
+
+- Move coaching eligibility, target extraction, drill selection and comparison verdicts out of API route code.
+- Keep database writes in the application route for now; do not add repository/service abstractions before they pay for themselves.
+- Add direct domain tests for the policy in addition to HTTP integration tests.
+
+Implementation status:
+
+- `backend/app/domain/coaching.py` owns the coaching write gate, deterministic drill mapping and comparison verdict thresholds.
+- `backend/app/main.py` delegates intervention/comparison decisions to the domain policy while retaining HTTP and transaction responsibilities.
+
+Acceptance:
+
+- Abstained or low-quality attempts persist reviewable results but cannot create coaching artifacts.
+- The same policy works for provider-returned evaluations and persisted evaluation rows.
+- Route tests and domain tests both prove the gate.
+
+### PR 4B: Android shell
 
 Deliver:
 
