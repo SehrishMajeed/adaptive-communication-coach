@@ -513,12 +513,12 @@ Acceptance:
 
 ## Definition of "done" for the next step
 
-Phase 5C (context visibility across the web flow) is now fully complete, including full test coverage across all affected screens (Welcome, Recording, Review, and Feedback).
+Phase 5D (Android shell) is now fully complete. We have successfully verified:
 
-The next completed step should be PR 5D: Android shell:
+- React Native app shell created (`mobile/` directory);
+- Practice module screens built (`Setup`, `Record`, `Review`, `Feedback`);
+- Permission rationale and local replay implemented (`react-native-vision-camera`, `react-native-permissions`);
+- Typed API client integrated (`shared/types.ts` and `api.ts`);
+- Device test and Jest tests cover the full loop.
 
-- React Native app shell created;
-- Practice module screens built;
-- Permission rationale and local replay implemented;
-- Typed API client integrated;
-- Device test covers the full loop.
+The next completed step should be Phase 6: Device testing, hardening, and User Pilot.
