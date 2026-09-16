@@ -23,6 +23,7 @@ from .domain.coaching import (
     coaching_write_eligibility,
     comparison_verdict,
     decide_attempt_workflow,
+    persisted_workflow_decision,
 )
 from .models.database import (
     CoachingAttempt,
@@ -176,7 +177,10 @@ def workflow_from_saved_attempt(
     evaluation: PracticeEvaluation,
     intervention: PracticeIntervention | None,
     comparison: AttemptComparison | None,
+    prefer_persisted: bool = True,
 ) -> AttemptWorkflowDecision:
+    if prefer_persisted and attempt.workflow_route and attempt.workflow_reason:
+        return persisted_workflow_decision(attempt.workflow_route, attempt.workflow_reason)
     current_eligibility = coaching_write_eligibility(evaluation)
     if comparison is not None:
         return AttemptWorkflowDecision(
@@ -469,6 +473,11 @@ def process_practice_session_attempt(
             .scalar()
             + 1
         )
+        route = decide_attempt_workflow(
+            next_sequence,
+            coaching_write_eligibility(evaluation),
+            has_prior_intervention=latest_intervention_for_session(db, session.id) is not None,
+        )
         attempt = PracticeAttempt(
             session_id=session.id,
             sequence_number=next_sequence,
@@ -477,6 +486,8 @@ def process_practice_session_attempt(
             capture_duration_seconds=duration_seconds,
             media_duration_seconds=metrics.duration_seconds,
             transcript=evaluation.transcript,
+            workflow_route=route.route,
+            workflow_reason=route.reason,
         )
         db.add(attempt)
         db.flush()
@@ -511,21 +522,20 @@ def process_practice_session_attempt(
         )
         db.add_all([measurement, stored_evaluation])
         db.flush()
-        route = decide_attempt_workflow(
-            next_sequence,
-            coaching_write_eligibility(evaluation),
-            has_prior_intervention=latest_intervention_for_session(db, session.id) is not None,
-        )
         if route.route == "baseline":
             intervention = create_intervention_if_possible(db, session.id, attempt.id, evaluation)
             comparison = None
         elif route.route == "retry_comparable":
             intervention, comparison = create_comparison_if_possible(db, session.id, attempt, stored_evaluation)
-            route = workflow_from_saved_attempt(db, attempt, stored_evaluation, intervention, comparison)
+            route = workflow_from_saved_attempt(db, attempt, stored_evaluation, intervention, comparison, prefer_persisted=False)
+            attempt.workflow_route = route.route
+            attempt.workflow_reason = route.reason
         elif next_sequence > 1:
             intervention = latest_intervention_for_session(db, session.id)
             comparison = None
-            route = workflow_from_saved_attempt(db, attempt, stored_evaluation, intervention, comparison)
+            route = workflow_from_saved_attempt(db, attempt, stored_evaluation, intervention, comparison, prefer_persisted=False)
+            attempt.workflow_route = route.route
+            attempt.workflow_reason = route.reason
         else:
             intervention = None
             comparison = None

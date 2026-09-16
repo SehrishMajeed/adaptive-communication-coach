@@ -44,6 +44,8 @@ def test_phase2_migration_creates_durable_practice_tables(migrated_engine):
         "alembic_version",
     }.issubset(tables)
     evaluation_columns = {column["name"] for column in inspector.get_columns("practice_evaluations")}
+    attempt_columns = {column["name"] for column in inspector.get_columns("practice_attempts")}
+    assert {"workflow_route", "workflow_reason"}.issubset(attempt_columns)
     assert {
         "evidence_json",
         "abstention_reason",
@@ -115,4 +117,14 @@ def test_phase2_constraints_reject_invalid_status_and_scores(migrated_engine):
                     'technical-explanation-v1', 'completed', 'usable', 'quote_verified',
                     'actionable', 11, 5, 5, 5, '[]', '[]'
                 )
+            """))
+
+    with pytest.raises(IntegrityError):
+        with migrated_engine.begin() as connection:
+            connection.execute(text("""
+                INSERT INTO practice_attempts (
+                    session_id, sequence_number, idempotency_key, status, capture_duration_seconds,
+                    workflow_route, workflow_reason
+                )
+                VALUES (1, 2, 'idem-2', 'completed', 60, 'unknown_route', 'first_eligible_attempt')
             """))

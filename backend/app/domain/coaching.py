@@ -96,6 +96,15 @@ def decide_attempt_workflow(
     return AttemptWorkflowDecision("retry_comparable", "retry_eligible_with_baseline", False, True)
 
 
+def persisted_workflow_decision(route: AttemptWorkflowRoute, reason: AttemptWorkflowReason) -> AttemptWorkflowDecision:
+    return AttemptWorkflowDecision(
+        route=route,
+        reason=reason,
+        should_create_intervention=route == "baseline",
+        should_create_comparison=route == "retry_comparable",
+    )
+
+
 def comparison_verdict(delta: float) -> str:
     if delta >= 1:
         return "improved"

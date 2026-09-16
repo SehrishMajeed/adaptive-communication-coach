@@ -91,6 +91,8 @@ Current Phase 4B implementation adds explicit attempt workflow routes in the sam
 
 Current Phase 4C implementation returns the chosen workflow route in session-scoped attempt responses and renders it as a subtle coaching-engine note in the feedback UI. Reviewers can now see when the backend treated an attempt as baseline, abstained, blocked retry or comparable retry.
 
+Current Phase 4D implementation persists `workflow_route` and `workflow_reason` on each durable practice attempt. Idempotent replay now reads the stored route/reason, strengthening the audit trail for why an intervention or comparison was, or was not, created.
+
 ## Failure and transaction boundaries
 
 - Reject unauthorized or invalid requests before processing; stable error codes distinguish invalid media, unavailable transcription, invalid evaluation, provider timeout and persistence failure. Frontend preserves a retryable local recording when appropriate.

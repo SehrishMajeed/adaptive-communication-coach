@@ -140,6 +140,8 @@ class PracticeAttempt(Base):
     capture_duration_seconds = Column(Float, nullable=False)
     media_duration_seconds = Column(Float, nullable=True)
     transcript = Column(String, nullable=True)
+    workflow_route = Column(String, nullable=False, default="baseline_blocked")
+    workflow_reason = Column(String, nullable=False, default="first_attempt_not_eligible")
     created_at = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
     finalized_at = Column(DateTime(timezone=True), nullable=True)
     failure_code = Column(String, nullable=True)
@@ -151,6 +153,8 @@ class PracticeAttempt(Base):
         CheckConstraint("capture_duration_seconds BETWEEN 1 AND 300", name="ck_practice_attempts_capture_duration_bounds"),
         CheckConstraint("media_duration_seconds IS NULL OR media_duration_seconds BETWEEN 1 AND 305", name="ck_practice_attempts_media_duration_bounds"),
         CheckConstraint("status IN ('pending', 'processing', 'completed', 'abstained', 'invalid', 'failed')", name="ck_practice_attempts_status"),
+        CheckConstraint("workflow_route IN ('abstained', 'baseline', 'baseline_blocked', 'retry_comparable', 'retry_blocked', 'retry_without_baseline')", name="ck_practice_attempts_workflow_route"),
+        CheckConstraint("workflow_reason IN ('abstained_evaluation', 'first_eligible_attempt', 'first_attempt_not_eligible', 'retry_eligible_with_baseline', 'retry_not_eligible', 'missing_prior_intervention', 'baseline_not_eligible')", name="ck_practice_attempts_workflow_reason"),
     )
 
 

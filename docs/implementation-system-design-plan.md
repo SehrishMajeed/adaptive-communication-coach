@@ -385,7 +385,27 @@ Acceptance:
 - Frontend rejects malformed workflow metadata.
 - UI shows the route without implying long-term progress.
 
-### PR 4D: Android shell
+### Phase 4D: persisted workflow audit trail
+
+Deliver:
+
+- Persist `workflow_route` and `workflow_reason` on durable practice attempts.
+- Add migration constraints so only supported workflow states can be stored.
+- Replay workflow metadata from stored attempt fields instead of deriving it only at response time.
+
+Implementation status:
+
+- `practice_attempts` includes constrained `workflow_route` and `workflow_reason` columns.
+- Session-scoped attempt finalization writes the selected route and reason.
+- Idempotent replay returns stored workflow metadata.
+
+Acceptance:
+
+- Baseline, abstained, retry-blocked and comparable retry attempts store route and reason.
+- Invalid workflow route/reason values are rejected by migration constraints.
+- The response contract remains consistent with stored audit fields.
+
+### PR 4E: Android shell
 
 Deliver:
 

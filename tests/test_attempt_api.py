@@ -116,6 +116,12 @@ def test_practice_session_attempt_is_owned_versioned_and_sequence_scoped(client,
     assert evaluation.evidence_status == "quote_verified"
     assert evaluation.feedback_status == "actionable"
     assert evaluation.evidence_json == contract["evaluation"]["evidence"]
+    first_attempt = database.query(PracticeAttempt).filter(PracticeAttempt.id == first.json()["attempt_id"]).one()
+    second_attempt = database.query(PracticeAttempt).filter(PracticeAttempt.id == second.json()["attempt_id"]).one()
+    assert first_attempt.workflow_route == "baseline"
+    assert first_attempt.workflow_reason == "first_eligible_attempt"
+    assert second_attempt.workflow_route == "retry_comparable"
+    assert second_attempt.workflow_reason == "retry_eligible_with_baseline"
     assert first.json()["provenance"] == contract["provenance"]
     assert first.json()["workflow"] == {
         "route": "baseline",
@@ -193,7 +199,10 @@ def test_quality_gate_blocks_intervention_for_abstained_attempt_and_replays_idem
     }
     assert first["intervention"] is None
     assert first["comparison"] is None
-    assert database.query(PracticeAttempt).one().status == "abstained"
+    saved_attempt = database.query(PracticeAttempt).one()
+    assert saved_attempt.status == "abstained"
+    assert saved_attempt.workflow_route == "abstained"
+    assert saved_attempt.workflow_reason == "abstained_evaluation"
     assert database.query(PracticeIntervention).count() == 0
     assert database.query(AttemptComparison).count() == 0
     assert evaluator.call_count == 1
@@ -218,6 +227,9 @@ def test_quality_gate_blocks_comparison_for_limited_quality_retry(client, databa
     }
     assert retry["comparison"] is None
     assert retry["intervention"]["status"] == "assigned"
+    saved_retry = database.query(PracticeAttempt).filter(PracticeAttempt.id == retry["attempt_id"]).one()
+    assert saved_retry.workflow_route == "retry_blocked"
+    assert saved_retry.workflow_reason == "retry_not_eligible"
     assert database.query(PracticeIntervention).count() == 1
     assert database.query(PracticeIntervention).one().status == "assigned"
     assert database.query(AttemptComparison).count() == 0
