@@ -1,4 +1,4 @@
-import { parsePracticeAttemptResult, PracticeAttemptResult } from '../types';
+import { parsePracticeAttemptHistory, parsePracticeAttemptResult, PracticeAttemptHistory, PracticeAttemptResult } from '../types';
 import { prepareAudio } from './audio';
 import type { Recording } from './recording';
 
@@ -66,4 +66,14 @@ export const analyzeRecording = async (recording: Recording, sessionId?: number 
     }
     throw error;
   } finally { clearTimeout(timeout); }
+};
+
+export const fetchPracticeSessionHistory = async (sessionId: number): Promise<PracticeAttemptHistory> => {
+  const response = await fetch(`${apiBase()}/api/practice-sessions/${sessionId}/attempts`, {
+    method: 'GET',
+    headers: { 'X-Owner-Token': getOwnerToken() },
+  });
+  if (!response.ok) throw new Error('The backend could not load this session history.');
+  try { return parsePracticeAttemptHistory(await response.json()); }
+  catch { throw new Error('The backend returned invalid session history.'); }
 };

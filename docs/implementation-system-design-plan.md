@@ -425,7 +425,27 @@ Acceptance:
 - Reviewers can see durable coaching state across attempts.
 - A forged owner token cannot read another session's attempt history.
 
-### PR 4F: Android shell
+### Phase 5A: web history panel
+
+Deliver:
+
+- Fetch current-session attempt history after each analysis.
+- Render a compact durable history panel on the feedback screen.
+- Keep labels honest: route, WPM, evidence status and comparison verdict only.
+
+Implementation status:
+
+- `fetchPracticeSessionHistory` calls the owner-scoped history endpoint.
+- `FeedbackScreen` renders a lightweight `Session history` panel.
+- Component and API tests cover history parsing and display.
+
+Acceptance:
+
+- Users can see current-session durable attempts without resubmitting audio.
+- The panel does not claim long-term profile progress.
+- The UI gives Android a clear reference for the retry/history experience.
+
+### PR 5B: Android shell
 
 Deliver:
 

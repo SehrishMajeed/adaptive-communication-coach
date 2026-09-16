@@ -1,12 +1,12 @@
 
 import React, { useState, useCallback } from 'react';
-import { AppState, AIFeedback, BackendComparison, BackendWorkflow } from './types';
+import { AppState, AIFeedback, BackendComparison, BackendWorkflow, PracticeAttemptResult } from './types';
 import WelcomeScreen from './components/WelcomeScreen';
 import RecordingScreen from './components/RecordingScreen';
 import ReviewScreen from './components/ReviewScreen';
 import FeedbackScreen from './components/FeedbackScreen';
 import Loader from './components/Loader';
-import { analyzeRecording } from './services/api';
+import { analyzeRecording, fetchPracticeSessionHistory } from './services/api';
 import type { Recording } from './services/recording';
 
 const App: React.FC = () => {
@@ -15,6 +15,7 @@ const App: React.FC = () => {
   const [feedback, setFeedback] = useState<AIFeedback | null>(null);
   const [comparison, setComparison] = useState<BackendComparison | null>(null);
   const [workflow, setWorkflow] = useState<BackendWorkflow | null>(null);
+  const [history, setHistory] = useState<PracticeAttemptResult[]>([]);
   const [sessionId, setSessionId] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -39,6 +40,10 @@ const App: React.FC = () => {
       setComparison(result.comparison);
       setWorkflow(result.workflow);
       setFeedback(result.feedback);
+      setHistory([result]);
+      fetchPracticeSessionHistory(result.sessionId)
+        .then((loaded) => setHistory(loaded.attempts))
+        .catch(() => setHistory([result]));
       setAppState(AppState.FEEDBACK);
     } catch (err) {
 
@@ -60,6 +65,7 @@ const App: React.FC = () => {
     setFeedback(null);
     setComparison(null);
     setWorkflow(null);
+    setHistory([]);
     setSessionId(null);
     setError(null);
   };
@@ -75,7 +81,7 @@ const App: React.FC = () => {
       case AppState.ANALYZING:
         return <Loader />;
       case AppState.FEEDBACK:
-        return <FeedbackScreen feedback={feedback!} workflow={workflow} comparison={comparison} onRetrySame={handleRetrySameExplanation} onRestart={handleRestart} />;
+        return <FeedbackScreen feedback={feedback!} workflow={workflow} comparison={comparison} history={history} onRetrySame={handleRetrySameExplanation} onRestart={handleRestart} />;
       default:
         return <WelcomeScreen onStart={handleStart} />;
     }

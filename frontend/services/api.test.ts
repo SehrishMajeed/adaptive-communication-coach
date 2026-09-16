@@ -1,6 +1,6 @@
 import { afterEach, expect, it, vi } from 'vitest';
 import contract from '../../tests/fixtures/attempt-response.json';
-import { analyzeRecording } from './api';
+import { analyzeRecording, fetchPracticeSessionHistory } from './api';
 import { prepareAudio } from './audio';
 
 vi.mock('./audio', () => ({ prepareAudio: vi.fn() }));
@@ -48,6 +48,23 @@ it('creates a practice session before the first session-scoped upload', async ()
   expect(fetch.mock.calls[0][0]).toContain('/api/practice-sessions');
   expect(fetch.mock.calls[0][1].headers['X-Owner-Token']).toBeTruthy();
   expect(fetch.mock.calls[1][0]).toContain('/api/practice-sessions/42/attempts');
+});
+
+it('loads owner-scoped practice session history', async () => {
+  const historyContract = {
+    session_id: 42,
+    attempts: [attemptContract, { ...attemptContract, attempt_id: 2, sequence_number: 2 }],
+  };
+  const fetch = vi.fn().mockResolvedValue({ ok: true, json: async () => historyContract });
+  vi.stubGlobal('fetch', fetch);
+
+  const result = await fetchPracticeSessionHistory(42);
+
+  expect(result.sessionId).toBe(42);
+  expect(result.attempts.map(attempt => attempt.sequenceNumber)).toEqual([1, 2]);
+  expect(fetch.mock.calls[0][0]).toContain('/api/practice-sessions/42/attempts');
+  expect(fetch.mock.calls[0][1].method).toBe('GET');
+  expect(fetch.mock.calls[0][1].headers['X-Owner-Token']).toBeTruthy();
 });
 
 it.each([422, 502, 503])('returns a recoverable error for HTTP %s', async status => {

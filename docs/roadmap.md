@@ -50,6 +50,7 @@ These nine phases supersede the earlier phase numbering. The audit is complete p
 - Deliverables: focused scenario/audience/goal setup, supported durations, deliberate full/presence/voice review, one coaching target, evidence viewer, understandable retry comparison, honest history and uncertainty; accessible failure/recovery states and consistent naming.
 - Dependencies: stable explicit task APIs and tested coaching outcomes. Capture safety fixes remain Phase 1 work.
 - Acceptance: users can complete the central loop and explain what to practice and why; review video remains local; unsupported scores never appear; supported browsers and accessibility checks are documented.
+- Current implementation note: Phase 5A adds a lightweight web history panel backed by the owner-scoped session history endpoint.
 - Tests: frontend component and browser E2E paths, keyboard/screen-reader smoke, permissions/format handling, task preservation, formative user comprehension sessions.
 - Non-goals: generic dashboard score proliferation, community features, cosmetic redesign before correctness or automated presence scoring.
 

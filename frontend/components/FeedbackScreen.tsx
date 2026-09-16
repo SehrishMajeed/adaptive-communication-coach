@@ -1,10 +1,11 @@
 import React from 'react';
-import { AIFeedback, BackendComparison, BackendWorkflow } from '../types';
+import { AIFeedback, BackendComparison, BackendWorkflow, PracticeAttemptResult } from '../types';
 
 interface FeedbackScreenProps {
   feedback: AIFeedback;
   workflow?: BackendWorkflow | null;
   comparison?: BackendComparison | null;
+  history?: PracticeAttemptResult[];
   onRetrySame: () => void;
   onRestart: () => void;
 }
@@ -95,7 +96,33 @@ const workflowLabels: Record<BackendWorkflow['route'], string> = {
   retry_without_baseline: 'Retry without baseline',
 };
 
-const FeedbackScreen: React.FC<FeedbackScreenProps> = ({ feedback, workflow, comparison, onRetrySame, onRestart }) => {
+const HistoryPanel: React.FC<{ history: PracticeAttemptResult[] }> = ({ history }) => {
+  if (!history.length) return null;
+  return (
+    <div className="mt-6 bg-gray-900/60 p-4 rounded-lg border border-gray-700">
+      <h3 className="text-lg font-semibold mb-1">Session history</h3>
+      <p className="text-sm text-gray-400 mb-4">Durable backend attempts for this practice session.</p>
+      <div className="space-y-3">
+        {history.map((attempt) => {
+          const focus = attempt.feedback.evaluation.recommended_focus[0]?.replaceAll('_', ' ') ?? 'no focus';
+          return (
+            <div key={attempt.feedback.attempt_id} className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 bg-gray-700/40 p-3 rounded-lg">
+              <div>
+                <p className="text-sm font-semibold">Attempt {attempt.sequenceNumber}: {workflowLabels[attempt.workflow.route]}</p>
+                <p className="text-xs text-gray-400">Focus: {focus}. WPM: {attempt.feedback.measurements.wpm}. Evidence: {attempt.feedback.evaluation.evidence_status.replaceAll('_', ' ')}.</p>
+              </div>
+              <p className="text-xs text-gray-300">
+                {attempt.comparison ? `Comparison: ${attempt.comparison.verdict.replaceAll('_', ' ')}` : 'No comparison yet'}
+              </p>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
+const FeedbackScreen: React.FC<FeedbackScreenProps> = ({ feedback, workflow, comparison, history = [], onRetrySame, onRestart }) => {
   const primaryFocus = feedback.evaluation.recommended_focus[0];
   const drill = primaryFocus ? focusDrills[primaryFocus] : 'Retry the explanation with a clearer opening sentence.';
   const backendDeltas = comparison?.deltas ?? {};
@@ -201,6 +228,8 @@ const FeedbackScreen: React.FC<FeedbackScreenProps> = ({ feedback, workflow, com
           </div>
         </div>
       )}
+
+      <HistoryPanel history={history} />
 
       <p className="mt-4 text-sm text-gray-400">Audio duration: {feedback.measurements.duration_seconds.toFixed(1)}s (decoded sample frames). Words: {feedback.measurements.word_count}. Filler candidates: {feedback.measurements.total_fillers}.</p>
       <p className="mt-2 text-sm text-gray-500">Prompt: {feedback.provenance.prompt_version}. Model: {feedback.provenance.model_id}. Rubric: {feedback.provenance.rubric_version}.</p>

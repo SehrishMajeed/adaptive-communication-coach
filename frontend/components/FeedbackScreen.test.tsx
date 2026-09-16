@@ -2,7 +2,7 @@ import React from 'react';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { expect, it, vi } from 'vitest';
 import contract from '../../tests/fixtures/attempt-response.json';
-import { parseFeedback } from '../types';
+import { parseFeedback, parsePracticeAttemptResult } from '../types';
 import FeedbackScreen from './FeedbackScreen';
 import ReviewScreen from './ReviewScreen';
 
@@ -30,6 +30,44 @@ it('renders the exact HTTP contract checked by backend tests', () => {
 
 it('shows backend-owned retry comparison without claiming long-term profile progress', () => {
   const currentFeedback = parseFeedback(contract);
+  const history = [
+    parsePracticeAttemptResult({
+      ...contract,
+      session_id: 42,
+      sequence_number: 1,
+      workflow: {
+        route: 'baseline',
+        reason: 'first_eligible_attempt',
+        creates_intervention: true,
+        creates_comparison: false,
+      },
+      intervention: null,
+      comparison: null,
+    }),
+    parsePracticeAttemptResult({
+      ...contract,
+      attempt_id: 2,
+      session_id: 42,
+      sequence_number: 2,
+      workflow: {
+        route: 'retry_comparable',
+        reason: 'retry_eligible_with_baseline',
+        creates_intervention: false,
+        creates_comparison: true,
+      },
+      intervention: null,
+      comparison: {
+        comparison_id: 1,
+        baseline_attempt_id: 1,
+        retry_attempt_id: 2,
+        intervention_id: 1,
+        target_skill: 'clarity',
+        comparability_status: 'comparable',
+        verdict: 'improved',
+        deltas: { clarity: 2 },
+      },
+    }),
+  ];
 
   render(<FeedbackScreen feedback={currentFeedback} comparison={{
     comparison_id: 1,
@@ -40,9 +78,13 @@ it('shows backend-owned retry comparison without claiming long-term profile prog
     comparability_status: 'comparable',
     verdict: 'improved',
     deltas: { clarity: 2, wpm: 12, total_fillers: -2 },
-  }} onRetrySame={vi.fn()} onRestart={vi.fn()} />);
+  }} history={history} onRetrySame={vi.fn()} onRestart={vi.fn()} />);
 
   expect(screen.getByText('Compared with your previous try')).toBeInTheDocument();
+  expect(screen.getByText('Session history')).toBeInTheDocument();
+  expect(screen.getByText(/Attempt 1:/)).toHaveTextContent('Baseline route');
+  expect(screen.getByText(/Attempt 2:/)).toHaveTextContent('Comparable retry route');
+  expect(screen.getByText('Comparison: improved')).toBeInTheDocument();
   expect(screen.getByText('Backend-owned retry comparison for this practice session. This is not a long-term profile update yet.')).toBeInTheDocument();
   expect(screen.getByText(/Verdict:/)).toHaveTextContent('improved');
   expect(screen.getByText('+12 wpm')).toBeInTheDocument();

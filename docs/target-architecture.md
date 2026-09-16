@@ -95,6 +95,8 @@ Current Phase 4D implementation persists `workflow_route` and `workflow_reason` 
 
 Current Phase 4E implementation adds `GET /api/practice-sessions/{session_id}/attempts`. The endpoint is owner-scoped, ordered by attempt sequence and reconstructs each durable attempt with measurements, evaluation, workflow route, intervention and comparison where available.
 
+Current Phase 5A implementation uses that endpoint from the React prototype and renders a lightweight session history panel on the feedback screen. The panel shows durable attempt sequence, workflow route, WPM, evidence status and comparison verdict without claiming long-term skill progress.
+
 ## Failure and transaction boundaries
 
 - Reject unauthorized or invalid requests before processing; stable error codes distinguish invalid media, unavailable transcription, invalid evaluation, provider timeout and persistence failure. Frontend preserves a retryable local recording when appropriate.

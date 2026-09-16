@@ -68,6 +68,11 @@ export interface PracticeAttemptResult {
   comparison: BackendComparison | null;
 }
 
+export interface PracticeAttemptHistory {
+  sessionId: number;
+  attempts: PracticeAttemptResult[];
+}
+
 const object = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null && !Array.isArray(value);
 const number = (value: unknown, min: number, max = Infinity): value is number => typeof value === 'number' && Number.isFinite(value) && value >= min && value <= max;
 const integer = (value: unknown, min = 0): value is number => number(value, min) && Number.isInteger(value);
@@ -155,5 +160,16 @@ export function parsePracticeAttemptResult(value: unknown): PracticeAttemptResul
     }),
     workflow: parseWorkflow(value.workflow),
     comparison: parseComparison(value.comparison),
+  };
+}
+
+export function parsePracticeAttemptHistory(value: unknown): PracticeAttemptHistory {
+  if (!object(value) || !keys(value, ['session_id', 'attempts']) ||
+      !integer(value.session_id, 1) || !Array.isArray(value.attempts)) throw new Error('Invalid attempt history');
+  const attempts = value.attempts.map(parsePracticeAttemptResult);
+  if (!attempts.every(attempt => attempt.sessionId === value.session_id)) throw new Error('Invalid attempt history');
+  return {
+    sessionId: value.session_id,
+    attempts,
   };
 }
