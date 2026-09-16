@@ -120,6 +120,12 @@ class PracticeAttemptResponse(AttemptResponse):
     comparison: AttemptComparisonResponse | None = None
 
 
+class PracticeAttemptHistoryResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    session_id: int = Field(ge=1)
+    attempts: list[PracticeAttemptResponse]
+
+
 class PracticeSessionCreate(BaseModel):
     model_config = ConfigDict(extra="forbid")
     scenario: str = Field(default="Explain a technical project to a non-technical person in 60 seconds.", min_length=1, max_length=500)

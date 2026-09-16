@@ -405,7 +405,27 @@ Acceptance:
 - Invalid workflow route/reason values are rejected by migration constraints.
 - The response contract remains consistent with stored audit fields.
 
-### PR 4E: Android shell
+### Phase 4E: current-session attempt history
+
+Deliver:
+
+- Add an owner-scoped endpoint to list durable attempts for a practice session.
+- Return each attempt with measurements, evaluation, workflow, intervention and comparison.
+- Preserve sequence ordering and ownership isolation.
+
+Implementation status:
+
+- `GET /api/practice-sessions/{session_id}/attempts` returns ordered session attempts.
+- The endpoint rejects wrong owners and missing sessions.
+- History reconstruction reuses the same response contract as live attempt submission.
+
+Acceptance:
+
+- Android/web clients can reload current-session state without resubmitting audio.
+- Reviewers can see durable coaching state across attempts.
+- A forged owner token cannot read another session's attempt history.
+
+### PR 4F: Android shell
 
 Deliver:
 

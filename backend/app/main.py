@@ -49,6 +49,7 @@ from .schemas.attempt import (
     EvaluationProvenance,
     InterventionResponse,
     Measurements,
+    PracticeAttemptHistoryResponse,
     PracticeAttemptResponse,
     PracticeSessionCreate,
     PracticeSessionResponse,
@@ -97,6 +98,16 @@ def get_or_create_practice_user(db: Session, owner_token: str) -> PracticeUser:
     db.add(user)
     db.flush()
     return user
+
+
+def owned_practice_session_or_response(db: Session, session_id: int, owner_token: str):
+    session = db.get(PracticeSession, session_id)
+    if session is None:
+        return error_response(404, "session_not_found", "The practice session does not exist.")
+    owner = db.get(PracticeUser, session.owner_id)
+    if owner is None or owner.anonymous_device_id_hash != owner_hash(owner_token):
+        return error_response(403, "forbidden", "You cannot access this practice session.")
+    return session
 
 
 def read_validated_audio(audio: UploadFile, duration_seconds: float):
@@ -257,6 +268,21 @@ def comparison_for_attempt(db: Session, attempt_id: int) -> AttemptComparison | 
     return db.query(AttemptComparison).filter(AttemptComparison.retry_attempt_id == attempt_id).one_or_none()
 
 
+def intervention_for_attempt_response(db: Session, attempt: PracticeAttempt, comparison: AttemptComparison | None) -> PracticeIntervention | None:
+    intervention = (
+        db.query(PracticeIntervention)
+        .filter(PracticeIntervention.source_attempt_id == attempt.id)
+        .one_or_none()
+    )
+    if intervention is not None:
+        return intervention
+    if comparison is not None:
+        return db.get(PracticeIntervention, comparison.intervention_id)
+    if attempt.sequence_number > 1:
+        return latest_intervention_for_session(db, attempt.session_id)
+    return None
+
+
 def create_intervention_if_possible(
     db: Session,
     session_id: int,
@@ -406,6 +432,41 @@ def create_practice_session(
         return error_response(503, "storage_failed", "The practice session could not be created. Please try again.")
 
 
+@app.get(
+    "/api/practice-sessions/{session_id}/attempts",
+    response_model=PracticeAttemptHistoryResponse,
+    responses={status: {"model": ErrorResponse} for status in (403, 404, 503)},
+)
+def list_practice_session_attempts(
+    session_id: int,
+    x_owner_token: str = Header(..., min_length=8, max_length=200),
+    db: Session = Depends(get_db),
+):
+    try:
+        session = owned_practice_session_or_response(db, session_id, x_owner_token)
+        if isinstance(session, JSONResponse):
+            return session
+        attempts = (
+            db.query(PracticeAttempt)
+            .filter(PracticeAttempt.session_id == session.id, PracticeAttempt.status.in_(("completed", "abstained")))
+            .order_by(PracticeAttempt.sequence_number)
+            .all()
+        )
+        responses = []
+        for attempt in attempts:
+            measurement = db.query(PracticeMeasurement).filter(PracticeMeasurement.attempt_id == attempt.id).one_or_none()
+            evaluation = db.query(PracticeEvaluation).filter(PracticeEvaluation.attempt_id == attempt.id).one_or_none()
+            if measurement is None or evaluation is None:
+                continue
+            comparison = comparison_for_attempt(db, attempt.id)
+            intervention = intervention_for_attempt_response(db, attempt, comparison)
+            workflow = workflow_from_saved_attempt(db, attempt, evaluation, intervention, comparison)
+            responses.append(response_from_practice_attempt(attempt, measurement, evaluation, workflow, intervention, comparison))
+        return PracticeAttemptHistoryResponse(session_id=session.id, attempts=responses)
+    except SQLAlchemyError:
+        return error_response(503, "storage_failed", "The attempt history could not be loaded. Please try again.")
+
+
 @app.post(
     "/api/practice-sessions/{session_id}/attempts",
     response_model=PracticeAttemptResponse,
@@ -425,12 +486,9 @@ def process_practice_session_attempt(
         return error_response(422, "invalid_media", "The recording is invalid or unsupported. Record 1-60 seconds and try again.")
 
     try:
-        session = db.get(PracticeSession, session_id)
-        if session is None:
-            return error_response(404, "session_not_found", "The practice session does not exist.")
-        owner = db.get(PracticeUser, session.owner_id)
-        if owner is None or owner.anonymous_device_id_hash != owner_hash(x_owner_token):
-            return error_response(403, "forbidden", "You cannot add attempts to this practice session.")
+        session = owned_practice_session_or_response(db, session_id, x_owner_token)
+        if isinstance(session, JSONResponse):
+            return session
 
         existing = (
             db.query(PracticeAttempt)

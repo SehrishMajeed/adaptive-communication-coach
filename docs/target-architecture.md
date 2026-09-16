@@ -18,7 +18,7 @@ flowchart TD
   Response --> FrontendCompare[In-memory retry comparison in frontend]
 ```
 
-This is a modular prototype in one backend process. The graph neither validates evidence nor updates the profile. There is no worker, object store, history API, migration system, or authentication layer. The current retry comparison is frontend memory only, not durable coaching state. Manual Chrome/DevTools verification remains required before claiming the live privacy path is fully verified.
+This is a modular prototype in one backend process. The graph neither validates evidence nor updates the profile. There is no worker, object store or full authentication layer. Phase 4 now includes durable owned sessions, migrations, session-scoped attempts, backend-owned retry comparison and an owner-scoped session attempt history endpoint. Manual Chrome/DevTools verification remains required before claiming the live privacy path is fully verified.
 
 ## Target: one modular application
 
@@ -92,6 +92,8 @@ Current Phase 4B implementation adds explicit attempt workflow routes in the sam
 Current Phase 4C implementation returns the chosen workflow route in session-scoped attempt responses and renders it as a subtle coaching-engine note in the feedback UI. Reviewers can now see when the backend treated an attempt as baseline, abstained, blocked retry or comparable retry.
 
 Current Phase 4D implementation persists `workflow_route` and `workflow_reason` on each durable practice attempt. Idempotent replay now reads the stored route/reason, strengthening the audit trail for why an intervention or comparison was, or was not, created.
+
+Current Phase 4E implementation adds `GET /api/practice-sessions/{session_id}/attempts`. The endpoint is owner-scoped, ordered by attempt sequence and reconstructs each durable attempt with measurements, evaluation, workflow route, intervention and comparison where available.
 
 ## Failure and transaction boundaries
 

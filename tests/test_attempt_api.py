@@ -165,6 +165,36 @@ def test_practice_session_retry_comparison_reports_improvement(client, database,
     assert saved.deltas_json["clarity"] == 2
 
 
+def test_practice_session_attempt_history_is_owner_scoped_ordered_and_durable(client, database, evaluator):
+    session_id = create_session(client).json()["session_id"]
+    first = submit_session_attempt(client, session_id, idempotency_key="history-baseline").json()
+    second = submit_session_attempt(client, session_id, idempotency_key="history-retry").json()
+
+    result = client.get(f"{SESSION_URL}/{session_id}/attempts", headers=OWNER_HEADERS)
+
+    assert result.status_code == 200
+    body = result.json()
+    assert body["session_id"] == session_id
+    assert [attempt["attempt_id"] for attempt in body["attempts"]] == [first["attempt_id"], second["attempt_id"]]
+    assert [attempt["sequence_number"] for attempt in body["attempts"]] == [1, 2]
+    assert body["attempts"][0]["workflow"]["route"] == "baseline"
+    assert body["attempts"][0]["intervention"]["target_skill"] == "clarity"
+    assert body["attempts"][1]["workflow"]["route"] == "retry_comparable"
+    assert body["attempts"][1]["comparison"]["baseline_attempt_id"] == first["attempt_id"]
+    assert body["attempts"][1]["comparison"] == second["comparison"]
+
+
+def test_practice_session_attempt_history_rejects_wrong_owner_and_missing_session(client, database, evaluator):
+    session_id = create_session(client).json()["session_id"]
+    submit_session_attempt(client, session_id, idempotency_key="history-baseline")
+
+    wrong_owner = client.get(f"{SESSION_URL}/{session_id}/attempts", headers={"X-Owner-Token": "other-owner-123"})
+    missing = client.get(f"{SESSION_URL}/999/attempts", headers=OWNER_HEADERS)
+
+    assert wrong_owner.status_code == 403
+    assert missing.status_code == 404
+
+
 def test_quality_gate_blocks_intervention_for_abstained_attempt_and_replays_idempotently(client, database, evaluator, contract):
     session_id = create_session(client).json()["session_id"]
     abstained = {
