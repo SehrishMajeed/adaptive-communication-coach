@@ -19,6 +19,23 @@ CoachingGateReason = Literal[
     "feedback_not_actionable",
     "missing_focus",
 ]
+AttemptWorkflowRoute = Literal[
+    "abstained",
+    "baseline",
+    "baseline_blocked",
+    "retry_comparable",
+    "retry_blocked",
+    "retry_without_baseline",
+]
+AttemptWorkflowReason = Literal[
+    "abstained_evaluation",
+    "first_eligible_attempt",
+    "first_attempt_not_eligible",
+    "retry_eligible_with_baseline",
+    "retry_not_eligible",
+    "missing_prior_intervention",
+    "baseline_not_eligible",
+]
 
 
 @dataclass(frozen=True)
@@ -26,6 +43,14 @@ class CoachingWriteEligibility:
     allowed: bool
     reason: CoachingGateReason
     target_skill: Skill | None
+
+
+@dataclass(frozen=True)
+class AttemptWorkflowDecision:
+    route: AttemptWorkflowRoute
+    reason: AttemptWorkflowReason
+    should_create_intervention: bool
+    should_create_comparison: bool
 
 
 def target_skill_for_evaluation(evaluation) -> Skill | None:
@@ -48,6 +73,27 @@ def coaching_write_eligibility(evaluation) -> CoachingWriteEligibility:
     if target_skill is None:
         return CoachingWriteEligibility(False, "missing_focus", None)
     return CoachingWriteEligibility(True, "eligible", target_skill)
+
+
+def decide_attempt_workflow(
+    sequence_number: int,
+    current_eligibility: CoachingWriteEligibility,
+    has_prior_intervention: bool,
+    baseline_eligibility: CoachingWriteEligibility | None = None,
+) -> AttemptWorkflowDecision:
+    if current_eligibility.reason == "evaluation_not_completed":
+        return AttemptWorkflowDecision("abstained", "abstained_evaluation", False, False)
+    if sequence_number == 1:
+        if current_eligibility.allowed:
+            return AttemptWorkflowDecision("baseline", "first_eligible_attempt", True, False)
+        return AttemptWorkflowDecision("baseline_blocked", "first_attempt_not_eligible", False, False)
+    if not current_eligibility.allowed:
+        return AttemptWorkflowDecision("retry_blocked", "retry_not_eligible", False, False)
+    if not has_prior_intervention:
+        return AttemptWorkflowDecision("retry_without_baseline", "missing_prior_intervention", False, False)
+    if baseline_eligibility is not None and not baseline_eligibility.allowed:
+        return AttemptWorkflowDecision("retry_blocked", "baseline_not_eligible", False, False)
+    return AttemptWorkflowDecision("retry_comparable", "retry_eligible_with_baseline", False, True)
 
 
 def comparison_verdict(delta: float) -> str:

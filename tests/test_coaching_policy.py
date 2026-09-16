@@ -4,6 +4,7 @@ from backend.app.domain.coaching import (
     DRILLS,
     coaching_write_eligibility,
     comparison_verdict,
+    decide_attempt_workflow,
     target_skill_for_evaluation,
 )
 
@@ -54,3 +55,40 @@ def test_comparison_verdict_thresholds_are_domain_policy():
     assert comparison_verdict(0.9) == "no_clear_change"
     assert comparison_verdict(-0.9) == "no_clear_change"
     assert comparison_verdict(-1) == "regressed"
+
+
+def test_workflow_routes_baseline_abstained_and_retry_comparable_paths():
+    eligible = coaching_write_eligibility(evaluation())
+    abstained = coaching_write_eligibility(evaluation(evaluator_status="abstained"))
+
+    baseline = decide_attempt_workflow(1, eligible, has_prior_intervention=False)
+    abstained_route = decide_attempt_workflow(1, abstained, has_prior_intervention=False)
+    retry = decide_attempt_workflow(2, eligible, has_prior_intervention=True, baseline_eligibility=eligible)
+
+    assert baseline.route == "baseline"
+    assert baseline.should_create_intervention is True
+    assert baseline.should_create_comparison is False
+    assert abstained_route.route == "abstained"
+    assert abstained_route.should_create_intervention is False
+    assert abstained_route.should_create_comparison is False
+    assert retry.route == "retry_comparable"
+    assert retry.should_create_intervention is False
+    assert retry.should_create_comparison is True
+
+
+def test_workflow_routes_blocked_retry_cases_without_coaching_writes():
+    eligible = coaching_write_eligibility(evaluation())
+    limited = coaching_write_eligibility(evaluation(input_quality="limited"))
+
+    no_baseline = decide_attempt_workflow(2, eligible, has_prior_intervention=False)
+    limited_retry = decide_attempt_workflow(2, limited, has_prior_intervention=True)
+    blocked_baseline = decide_attempt_workflow(2, eligible, has_prior_intervention=True, baseline_eligibility=limited)
+
+    assert no_baseline.route == "retry_without_baseline"
+    assert limited_retry.route == "retry_blocked"
+    assert limited_retry.reason == "retry_not_eligible"
+    assert blocked_baseline.route == "retry_blocked"
+    assert blocked_baseline.reason == "baseline_not_eligible"
+    assert no_baseline.should_create_comparison is False
+    assert limited_retry.should_create_comparison is False
+    assert blocked_baseline.should_create_comparison is False

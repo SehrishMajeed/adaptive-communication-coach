@@ -344,7 +344,28 @@ Acceptance:
 - The same policy works for provider-returned evaluations and persisted evaluation rows.
 - Route tests and domain tests both prove the gate.
 
-### PR 4B: Android shell
+### Phase 4B: explicit backend workflow routes
+
+Deliver:
+
+- Add named attempt workflow routes for abstained, baseline, blocked baseline, missing-baseline retry, blocked retry and comparable retry.
+- Route intervention/comparison writes through those named decisions.
+- Keep the implementation inside the modular backend; do not add a queue, microservice or separate workflow runtime yet.
+
+Implementation status:
+
+- `backend/app/domain/coaching.py` exposes `AttemptWorkflowDecision` and `decide_attempt_workflow`.
+- `backend/app/main.py` checks route decisions before creating interventions or comparisons.
+- `tests/test_coaching_policy.py` covers baseline, abstained, comparable retry and blocked retry routes directly.
+
+Acceptance:
+
+- First eligible attempts establish a baseline intervention.
+- Abstained attempts persist but do not create coaching artifacts.
+- Eligible retries with a prior eligible intervention can compare.
+- Low-quality or missing-baseline retries cannot masquerade as progress.
+
+### PR 4C: Android shell
 
 Deliver:
 

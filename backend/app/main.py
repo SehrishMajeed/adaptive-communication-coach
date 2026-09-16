@@ -16,7 +16,7 @@ from sqlalchemy.orm import Session
 load_dotenv()
 
 from .agent.graph import build_coaching_graph
-from .domain.coaching import DRILLS, DRILL_VERSION, coaching_write_eligibility, comparison_verdict
+from .domain.coaching import DRILLS, DRILL_VERSION, coaching_write_eligibility, comparison_verdict, decide_attempt_workflow
 from .models.database import (
     CoachingAttempt,
     CoachingSession,
@@ -208,7 +208,8 @@ def create_intervention_if_possible(
     evaluation,
 ) -> PracticeIntervention | None:
     eligibility = coaching_write_eligibility(evaluation)
-    if not eligibility.allowed:
+    route = decide_attempt_workflow(1, eligibility, has_prior_intervention=False)
+    if not route.should_create_intervention:
         return None
     intervention = PracticeIntervention(
         session_id=session_id,
@@ -231,9 +232,20 @@ def create_comparison_if_possible(
 ) -> tuple[PracticeIntervention | None, AttemptComparison | None]:
     intervention = latest_intervention_for_session(db, session_id)
     if intervention is None or intervention.source_attempt_id == retry_attempt.id:
+        decide_attempt_workflow(
+            retry_attempt.sequence_number,
+            coaching_write_eligibility(retry_evaluation),
+            has_prior_intervention=False,
+        )
         return intervention, None
 
-    if not coaching_write_eligibility(retry_evaluation).allowed:
+    retry_eligibility = coaching_write_eligibility(retry_evaluation)
+    route = decide_attempt_workflow(
+        retry_attempt.sequence_number,
+        retry_eligibility,
+        has_prior_intervention=True,
+    )
+    if route.route == "abstained" or route.route == "retry_blocked":
         return intervention, None
 
     baseline_evaluation = (
@@ -243,7 +255,14 @@ def create_comparison_if_possible(
     )
     if baseline_evaluation is None:
         return intervention, None
-    if not coaching_write_eligibility(baseline_evaluation).allowed:
+    baseline_eligibility = coaching_write_eligibility(baseline_evaluation)
+    route = decide_attempt_workflow(
+        retry_attempt.sequence_number,
+        retry_eligibility,
+        has_prior_intervention=True,
+        baseline_eligibility=baseline_eligibility,
+    )
+    if not route.should_create_comparison:
         return intervention, None
 
     baseline_score = score_for_skill(baseline_evaluation, intervention.target_skill)
@@ -432,11 +451,22 @@ def process_practice_session_attempt(
         )
         db.add_all([measurement, stored_evaluation])
         db.flush()
-        if next_sequence == 1:
+        route = decide_attempt_workflow(
+            next_sequence,
+            coaching_write_eligibility(evaluation),
+            has_prior_intervention=latest_intervention_for_session(db, session.id) is not None,
+        )
+        if route.route == "baseline":
             intervention = create_intervention_if_possible(db, session.id, attempt.id, evaluation)
             comparison = None
-        else:
+        elif route.route == "retry_comparable":
             intervention, comparison = create_comparison_if_possible(db, session.id, attempt, stored_evaluation)
+        elif next_sequence > 1:
+            intervention = latest_intervention_for_session(db, session.id)
+            comparison = None
+        else:
+            intervention = None
+            comparison = None
         response = response_from_practice_attempt(attempt, measurement, stored_evaluation, intervention, comparison)
         db.commit()
         return response

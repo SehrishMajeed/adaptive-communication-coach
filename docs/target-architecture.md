@@ -87,6 +87,8 @@ Current PR 3D implementation adds the first coaching quality gate: only evaluati
 
 Current Phase 4A implementation moves this decision into `backend/app/domain/coaching.py`. The API route still owns HTTP, authorization and database writes, but the coaching engine now owns eligibility, target extraction, deterministic drill mapping and comparison verdict thresholds.
 
+Current Phase 4B implementation adds explicit attempt workflow routes in the same domain module: `abstained`, `baseline`, `baseline_blocked`, `retry_without_baseline`, `retry_blocked`, and `retry_comparable`. The route code now asks the coaching engine which path applies before creating interventions or comparisons.
+
 ## Failure and transaction boundaries
 
 - Reject unauthorized or invalid requests before processing; stable error codes distinguish invalid media, unavailable transcription, invalid evaluation, provider timeout and persistence failure. Frontend preserves a retryable local recording when appropriate.
