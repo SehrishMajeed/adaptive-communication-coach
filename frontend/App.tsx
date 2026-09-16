@@ -1,6 +1,6 @@
 
 import React, { useState, useCallback } from 'react';
-import { AppState, AIFeedback, BackendComparison } from './types';
+import { AppState, AIFeedback, BackendComparison, BackendWorkflow } from './types';
 import WelcomeScreen from './components/WelcomeScreen';
 import RecordingScreen from './components/RecordingScreen';
 import ReviewScreen from './components/ReviewScreen';
@@ -14,6 +14,7 @@ const App: React.FC = () => {
   const [recording, setRecording] = useState<Recording | null>(null);
   const [feedback, setFeedback] = useState<AIFeedback | null>(null);
   const [comparison, setComparison] = useState<BackendComparison | null>(null);
+  const [workflow, setWorkflow] = useState<BackendWorkflow | null>(null);
   const [sessionId, setSessionId] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -36,6 +37,7 @@ const App: React.FC = () => {
       const result = await analyzeRecording(recording, sessionId);
       setSessionId(result.sessionId);
       setComparison(result.comparison);
+      setWorkflow(result.workflow);
       setFeedback(result.feedback);
       setAppState(AppState.FEEDBACK);
     } catch (err) {
@@ -57,6 +59,7 @@ const App: React.FC = () => {
     setRecording(null);
     setFeedback(null);
     setComparison(null);
+    setWorkflow(null);
     setSessionId(null);
     setError(null);
   };
@@ -72,7 +75,7 @@ const App: React.FC = () => {
       case AppState.ANALYZING:
         return <Loader />;
       case AppState.FEEDBACK:
-        return <FeedbackScreen feedback={feedback!} comparison={comparison} onRetrySame={handleRetrySameExplanation} onRestart={handleRestart} />;
+        return <FeedbackScreen feedback={feedback!} workflow={workflow} comparison={comparison} onRetrySame={handleRetrySameExplanation} onRestart={handleRestart} />;
       default:
         return <WelcomeScreen onStart={handleStart} />;
     }

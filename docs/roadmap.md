@@ -38,6 +38,7 @@ These nine phases supersede the earlier phase numbering. The audit is complete p
 - Acceptance: baseline, invalid input, abstention, improved retry and non-improved retry routes are distinguishable; comparison uses the assigned target; repeated processing is idempotent; insufficient evidence does not masquerade as progress.
 - Current implementation note: Phase 4A extracts the coaching write gate, target selection adapter, deterministic drill map and comparison verdict thresholds into `backend/app/domain/coaching.py`.
 - Current implementation note: Phase 4B makes baseline, abstained, blocked retry, missing-baseline retry and comparable retry paths explicit domain workflow routes.
+- Current implementation note: Phase 4C returns the selected workflow route in the practice-attempt API and renders it in the feedback UI.
 - Tests: compiled graph scenarios with fake providers, target tie-breaks, incompatible contexts, profile gating/rebuild and baseline-to-retry API integration.
 - Non-goals: multiple agents, reinforcement learning, elaborate cognitive diagnosis or claiming causal intervention effects without a study.
 

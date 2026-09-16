@@ -117,12 +117,24 @@ def test_practice_session_attempt_is_owned_versioned_and_sequence_scoped(client,
     assert evaluation.feedback_status == "actionable"
     assert evaluation.evidence_json == contract["evaluation"]["evidence"]
     assert first.json()["provenance"] == contract["provenance"]
+    assert first.json()["workflow"] == {
+        "route": "baseline",
+        "reason": "first_eligible_attempt",
+        "creates_intervention": True,
+        "creates_comparison": False,
+    }
     assert first.json()["intervention"]["target_skill"] == "clarity"
     assert first.json()["intervention"]["status"] == "assigned"
     assert first.json()["comparison"] is None
     assert second.json()["comparison"]["baseline_attempt_id"] == first.json()["attempt_id"]
     assert second.json()["comparison"]["retry_attempt_id"] == second.json()["attempt_id"]
     assert second.json()["comparison"]["target_skill"] == "clarity"
+    assert second.json()["workflow"] == {
+        "route": "retry_comparable",
+        "reason": "retry_eligible_with_baseline",
+        "creates_intervention": False,
+        "creates_comparison": True,
+    }
     assert second.json()["comparison"]["comparability_status"] == "comparable"
     assert second.json()["comparison"]["verdict"] == "no_clear_change"
     assert database.query(PracticeIntervention).count() == 1
@@ -173,6 +185,12 @@ def test_quality_gate_blocks_intervention_for_abstained_attempt_and_replays_idem
 
     assert second == first
     assert first["evaluation"]["evaluator_status"] == "abstained"
+    assert first["workflow"] == {
+        "route": "abstained",
+        "reason": "abstained_evaluation",
+        "creates_intervention": False,
+        "creates_comparison": False,
+    }
     assert first["intervention"] is None
     assert first["comparison"] is None
     assert database.query(PracticeAttempt).one().status == "abstained"
@@ -192,6 +210,12 @@ def test_quality_gate_blocks_comparison_for_limited_quality_retry(client, databa
 
     assert baseline["intervention"]["target_skill"] == "clarity"
     assert retry["evaluation"]["input_quality"] == "limited"
+    assert retry["workflow"] == {
+        "route": "retry_blocked",
+        "reason": "retry_not_eligible",
+        "creates_intervention": False,
+        "creates_comparison": False,
+    }
     assert retry["comparison"] is None
     assert retry["intervention"]["status"] == "assigned"
     assert database.query(PracticeIntervention).count() == 1

@@ -365,7 +365,27 @@ Acceptance:
 - Eligible retries with a prior eligible intervention can compare.
 - Low-quality or missing-baseline retries cannot masquerade as progress.
 
-### PR 4C: Android shell
+### Phase 4C: visible workflow route
+
+Deliver:
+
+- Return the selected backend workflow route in the session-scoped attempt response.
+- Parse and render that route subtly in the web feedback UI.
+- Keep the display factual and non-marketing: it explains the engine path, not user skill.
+
+Implementation status:
+
+- `PracticeAttemptResponse` includes `workflow`.
+- `frontend/types.ts` validates the workflow contract.
+- `FeedbackScreen` renders a compact coaching-engine note.
+
+Acceptance:
+
+- Baseline, abstained, retry-blocked and comparable retry responses expose honest workflow routes.
+- Frontend rejects malformed workflow metadata.
+- UI shows the route without implying long-term progress.
+
+### PR 4D: Android shell
 
 Deliver:
 

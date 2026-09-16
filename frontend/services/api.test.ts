@@ -10,6 +10,12 @@ const attemptContract = {
   ...contract,
   session_id: 42,
   sequence_number: 1,
+  workflow: {
+    route: 'baseline',
+    reason: 'first_eligible_attempt',
+    creates_intervention: true,
+    creates_comparison: false,
+  },
   intervention: null,
   comparison: null,
 };
@@ -23,6 +29,7 @@ it('posts only prepared audio and explicit duration, never local video', async (
   const result = await analyzeRecording(recording, 42);
   expect(result.feedback).toEqual(contract);
   expect(result.sessionId).toBe(42);
+  expect(result.workflow.route).toBe('baseline');
   expect(prepareAudio).toHaveBeenCalledWith(recording.audioBlob);
   expect(fetch.mock.calls[0][0]).toContain('/api/practice-sessions/42/attempts');
   const form = fetch.mock.calls[0][1].body as FormData;

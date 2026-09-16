@@ -1,8 +1,9 @@
 import React from 'react';
-import { AIFeedback, BackendComparison } from '../types';
+import { AIFeedback, BackendComparison, BackendWorkflow } from '../types';
 
 interface FeedbackScreenProps {
   feedback: AIFeedback;
+  workflow?: BackendWorkflow | null;
   comparison?: BackendComparison | null;
   onRetrySame: () => void;
   onRestart: () => void;
@@ -85,7 +86,16 @@ const qualityLabels = {
   abstained: 'Evaluator abstained',
 };
 
-const FeedbackScreen: React.FC<FeedbackScreenProps> = ({ feedback, comparison, onRetrySame, onRestart }) => {
+const workflowLabels: Record<BackendWorkflow['route'], string> = {
+  abstained: 'Abstained route',
+  baseline: 'Baseline route',
+  baseline_blocked: 'Baseline blocked',
+  retry_comparable: 'Comparable retry route',
+  retry_blocked: 'Retry blocked',
+  retry_without_baseline: 'Retry without baseline',
+};
+
+const FeedbackScreen: React.FC<FeedbackScreenProps> = ({ feedback, workflow, comparison, onRetrySame, onRestart }) => {
   const primaryFocus = feedback.evaluation.recommended_focus[0];
   const drill = primaryFocus ? focusDrills[primaryFocus] : 'Retry the explanation with a clearer opening sentence.';
   const backendDeltas = comparison?.deltas ?? {};
@@ -103,6 +113,11 @@ const FeedbackScreen: React.FC<FeedbackScreenProps> = ({ feedback, comparison, o
           <p><span className="text-gray-400">Evidence:</span> {qualityLabels[feedback.evaluation.evidence_status]}</p>
           <p><span className="text-gray-400">Feedback:</span> {qualityLabels[feedback.evaluation.feedback_status]}</p>
         </div>
+        {workflow && (
+          <p className="mt-2 text-sm text-gray-400">
+            Coaching engine: <span className="text-gray-200">{workflowLabels[workflow.route]}</span>. It {workflow.creates_intervention || workflow.creates_comparison ? 'created a coaching artifact for this attempt.' : 'did not create a coaching artifact for this attempt.'}
+          </p>
+        )}
         <p className="mt-2 text-sm text-gray-400">These comments show when the AI can act, when it abstains, and whether transcript quotes support the coaching.</p>
       </div>
 

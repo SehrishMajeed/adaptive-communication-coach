@@ -89,6 +89,8 @@ Current Phase 4A implementation moves this decision into `backend/app/domain/coa
 
 Current Phase 4B implementation adds explicit attempt workflow routes in the same domain module: `abstained`, `baseline`, `baseline_blocked`, `retry_without_baseline`, `retry_blocked`, and `retry_comparable`. The route code now asks the coaching engine which path applies before creating interventions or comparisons.
 
+Current Phase 4C implementation returns the chosen workflow route in session-scoped attempt responses and renders it as a subtle coaching-engine note in the feedback UI. Reviewers can now see when the backend treated an attempt as baseline, abstained, blocked retry or comparable retry.
+
 ## Failure and transaction boundaries
 
 - Reject unauthorized or invalid requests before processing; stable error codes distinguish invalid media, unavailable transcription, invalid evaluation, provider timeout and persistence failure. Frontend preserves a retryable local recording when appropriate.

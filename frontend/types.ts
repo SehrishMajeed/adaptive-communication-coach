@@ -53,10 +53,18 @@ export interface BackendComparison {
   deltas: Record<string, number>;
 }
 
+export interface BackendWorkflow {
+  route: 'abstained' | 'baseline' | 'baseline_blocked' | 'retry_comparable' | 'retry_blocked' | 'retry_without_baseline';
+  reason: 'abstained_evaluation' | 'first_eligible_attempt' | 'first_attempt_not_eligible' | 'retry_eligible_with_baseline' | 'retry_not_eligible' | 'missing_prior_intervention' | 'baseline_not_eligible';
+  creates_intervention: boolean;
+  creates_comparison: boolean;
+}
+
 export interface PracticeAttemptResult {
   sessionId: number;
   sequenceNumber: number;
   feedback: AIFeedback;
+  workflow: BackendWorkflow;
   comparison: BackendComparison | null;
 }
 
@@ -123,8 +131,18 @@ function parseComparison(value: unknown): BackendComparison | null {
   return value as unknown as BackendComparison;
 }
 
+function parseWorkflow(value: unknown): BackendWorkflow {
+  if (!object(value) || !keys(value, ['route', 'reason', 'creates_intervention', 'creates_comparison'])) throw new Error('Invalid workflow');
+  if (!['abstained', 'baseline', 'baseline_blocked', 'retry_comparable', 'retry_blocked', 'retry_without_baseline'].includes(String(value.route)) ||
+      !['abstained_evaluation', 'first_eligible_attempt', 'first_attempt_not_eligible', 'retry_eligible_with_baseline', 'retry_not_eligible', 'missing_prior_intervention', 'baseline_not_eligible'].includes(String(value.reason)) ||
+      typeof value.creates_intervention !== 'boolean' || typeof value.creates_comparison !== 'boolean') {
+    throw new Error('Invalid workflow');
+  }
+  return value as unknown as BackendWorkflow;
+}
+
 export function parsePracticeAttemptResult(value: unknown): PracticeAttemptResult {
-  if (!object(value) || !keys(value, ['attempt_id', 'session_id', 'sequence_number', 'measurements', 'evaluation', 'provenance', 'intervention', 'comparison']) ||
+  if (!object(value) || !keys(value, ['attempt_id', 'session_id', 'sequence_number', 'measurements', 'evaluation', 'provenance', 'workflow', 'intervention', 'comparison']) ||
       !integer(value.session_id, 1) || !integer(value.sequence_number, 1)) throw new Error('Invalid attempt result');
   return {
     sessionId: value.session_id,
@@ -135,6 +153,7 @@ export function parsePracticeAttemptResult(value: unknown): PracticeAttemptResul
       evaluation: value.evaluation,
       provenance: value.provenance,
     }),
+    workflow: parseWorkflow(value.workflow),
     comparison: parseComparison(value.comparison),
   };
 }

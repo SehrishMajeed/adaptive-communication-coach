@@ -7,7 +7,12 @@ import FeedbackScreen from './FeedbackScreen';
 import ReviewScreen from './ReviewScreen';
 
 it('renders the exact HTTP contract checked by backend tests', () => {
-  render(<FeedbackScreen feedback={parseFeedback(contract)} onRetrySame={vi.fn()} onRestart={vi.fn()} />);
+  render(<FeedbackScreen feedback={parseFeedback(contract)} workflow={{
+    route: 'baseline',
+    reason: 'first_eligible_attempt',
+    creates_intervention: true,
+    creates_comparison: false,
+  }} onRetrySame={vi.fn()} onRestart={vi.fn()} />);
   expect(screen.getByText('Clear introduction')).toBeInTheDocument();
   expect(screen.getByText('Audience adaptation')).toBeInTheDocument();
   expect(screen.queryByText('Confidence')).not.toBeInTheDocument();
@@ -17,6 +22,7 @@ it('renders the exact HTTP contract checked by backend tests', () => {
   expect(screen.getByText('Usable input')).toBeInTheDocument();
   expect(screen.getByText('Quotes verified')).toBeInTheDocument();
   expect(screen.getByText('Actionable feedback')).toBeInTheDocument();
+  expect(screen.getByText(/Coaching engine:/)).toHaveTextContent('Baseline route');
   expect(screen.getByText('Um, hello.')).toBeInTheDocument();
   expect(screen.getByText(/Prompt: evaluation-audio-v3/)).toBeInTheDocument();
   expect(screen.getByText(contract.evaluation.transcript)).toBeInTheDocument();

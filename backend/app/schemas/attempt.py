@@ -89,9 +89,33 @@ class AttemptComparisonResponse(BaseModel):
     deltas: dict[str, float | int]
 
 
+class AttemptWorkflowResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    route: Literal[
+        "abstained",
+        "baseline",
+        "baseline_blocked",
+        "retry_comparable",
+        "retry_blocked",
+        "retry_without_baseline",
+    ]
+    reason: Literal[
+        "abstained_evaluation",
+        "first_eligible_attempt",
+        "first_attempt_not_eligible",
+        "retry_eligible_with_baseline",
+        "retry_not_eligible",
+        "missing_prior_intervention",
+        "baseline_not_eligible",
+    ]
+    creates_intervention: bool
+    creates_comparison: bool
+
+
 class PracticeAttemptResponse(AttemptResponse):
     session_id: int = Field(ge=1)
     sequence_number: int = Field(ge=1)
+    workflow: AttemptWorkflowResponse
     intervention: InterventionResponse | None = None
     comparison: AttemptComparisonResponse | None = None
 

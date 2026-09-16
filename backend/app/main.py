@@ -16,7 +16,14 @@ from sqlalchemy.orm import Session
 load_dotenv()
 
 from .agent.graph import build_coaching_graph
-from .domain.coaching import DRILLS, DRILL_VERSION, coaching_write_eligibility, comparison_verdict, decide_attempt_workflow
+from .domain.coaching import (
+    DRILLS,
+    DRILL_VERSION,
+    AttemptWorkflowDecision,
+    coaching_write_eligibility,
+    comparison_verdict,
+    decide_attempt_workflow,
+)
 from .models.database import (
     CoachingAttempt,
     CoachingSession,
@@ -36,6 +43,7 @@ from .schemas.attempt import (
     AttemptRequest,
     AttemptResponse,
     AttemptComparisonResponse,
+    AttemptWorkflowResponse,
     ErrorResponse,
     EvaluationProvenance,
     InterventionResponse,
@@ -153,10 +161,53 @@ def comparison_response(comparison: AttemptComparison | None) -> AttemptComparis
     )
 
 
+def workflow_response(workflow: AttemptWorkflowDecision) -> AttemptWorkflowResponse:
+    return AttemptWorkflowResponse(
+        route=workflow.route,
+        reason=workflow.reason,
+        creates_intervention=workflow.should_create_intervention,
+        creates_comparison=workflow.should_create_comparison,
+    )
+
+
+def workflow_from_saved_attempt(
+    db: Session,
+    attempt: PracticeAttempt,
+    evaluation: PracticeEvaluation,
+    intervention: PracticeIntervention | None,
+    comparison: AttemptComparison | None,
+) -> AttemptWorkflowDecision:
+    current_eligibility = coaching_write_eligibility(evaluation)
+    if comparison is not None:
+        return AttemptWorkflowDecision(
+            "retry_comparable",
+            "retry_eligible_with_baseline",
+            False,
+            True,
+        )
+    if attempt.sequence_number == 1:
+        return decide_attempt_workflow(attempt.sequence_number, current_eligibility, has_prior_intervention=False)
+    if intervention is None:
+        return decide_attempt_workflow(attempt.sequence_number, current_eligibility, has_prior_intervention=False)
+    baseline_evaluation = (
+        db.query(PracticeEvaluation)
+        .filter(PracticeEvaluation.attempt_id == intervention.source_attempt_id)
+        .one_or_none()
+    )
+    baseline_eligibility = coaching_write_eligibility(baseline_evaluation) if baseline_evaluation is not None else None
+    return decide_attempt_workflow(
+        attempt.sequence_number,
+        current_eligibility,
+        has_prior_intervention=True,
+        baseline_eligibility=baseline_eligibility,
+    )
+
+
 def response_from_practice_attempt(
     attempt: PracticeAttempt,
     measurement: PracticeMeasurement,
     evaluation: PracticeEvaluation,
+    workflow: AttemptWorkflowDecision,
     intervention: PracticeIntervention | None = None,
     comparison: AttemptComparison | None = None,
 ) -> PracticeAttemptResponse:
@@ -183,6 +234,7 @@ def response_from_practice_attempt(
         measurements=measurements_from_practice_measurement(measurement, attempt.media_duration_seconds),
         evaluation=rubric,
         provenance=evaluation_provenance(),
+        workflow=workflow_response(workflow),
         intervention=intervention_response(intervention),
         comparison=comparison_response(comparison),
     )
@@ -393,10 +445,18 @@ def process_practice_session_attempt(
                 existing_comparison = comparison_for_attempt(db, existing.id)
                 if existing_intervention is None and existing_comparison is not None:
                     existing_intervention = db.get(PracticeIntervention, existing_comparison.intervention_id)
+                existing_workflow = workflow_from_saved_attempt(
+                    db,
+                    existing,
+                    existing_evaluation,
+                    existing_intervention,
+                    existing_comparison,
+                )
                 return response_from_practice_attempt(
                     existing,
                     existing_measurement,
                     existing_evaluation,
+                    existing_workflow,
                     existing_intervention,
                     existing_comparison,
                 )
@@ -461,13 +521,15 @@ def process_practice_session_attempt(
             comparison = None
         elif route.route == "retry_comparable":
             intervention, comparison = create_comparison_if_possible(db, session.id, attempt, stored_evaluation)
+            route = workflow_from_saved_attempt(db, attempt, stored_evaluation, intervention, comparison)
         elif next_sequence > 1:
             intervention = latest_intervention_for_session(db, session.id)
             comparison = None
+            route = workflow_from_saved_attempt(db, attempt, stored_evaluation, intervention, comparison)
         else:
             intervention = None
             comparison = None
-        response = response_from_practice_attempt(attempt, measurement, stored_evaluation, intervention, comparison)
+        response = response_from_practice_attempt(attempt, measurement, stored_evaluation, route, intervention, comparison)
         db.commit()
         return response
     except IntegrityError:
