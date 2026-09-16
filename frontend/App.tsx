@@ -1,6 +1,6 @@
 
 import React, { useState, useCallback } from 'react';
-import { AppState, AIFeedback, BackendComparison, BackendWorkflow, PracticeAttemptResult } from './types';
+import { AppState, AIFeedback, BackendComparison, BackendWorkflow, PracticeAttemptResult, PracticeSetup } from './types';
 import WelcomeScreen from './components/WelcomeScreen';
 import RecordingScreen from './components/RecordingScreen';
 import ReviewScreen from './components/ReviewScreen';
@@ -16,10 +16,12 @@ const App: React.FC = () => {
   const [comparison, setComparison] = useState<BackendComparison | null>(null);
   const [workflow, setWorkflow] = useState<BackendWorkflow | null>(null);
   const [history, setHistory] = useState<PracticeAttemptResult[]>([]);
+  const [setup, setSetup] = useState<PracticeSetup | null>(null);
   const [sessionId, setSessionId] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const handleStart = () => {
+  const handleStart = (selectedSetup: PracticeSetup) => {
+    setSetup(selectedSetup);
     setAppState(AppState.RECORDING);
   };
 
@@ -35,7 +37,7 @@ const App: React.FC = () => {
     setError(null);
 
     try {
-      const result = await analyzeRecording(recording, sessionId);
+      const result = await analyzeRecording(recording, sessionId, setup ?? undefined);
       setSessionId(result.sessionId);
       setComparison(result.comparison);
       setWorkflow(result.workflow);
@@ -51,7 +53,7 @@ const App: React.FC = () => {
       setError(`Failed to get AI feedback. ${errorMessage}`);
       setAppState(AppState.REVIEW); // Go back to review screen on error
     }
-  }, [recording, sessionId]);
+  }, [recording, sessionId, setup]);
 
   const handleRetrySameExplanation = () => {
     setRecording(null);
@@ -66,6 +68,7 @@ const App: React.FC = () => {
     setComparison(null);
     setWorkflow(null);
     setHistory([]);
+    setSetup(null);
     setSessionId(null);
     setError(null);
   };

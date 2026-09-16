@@ -7,6 +7,13 @@ export enum ReviewMode { FULL = 'FULL', MUTED = 'MUTED', AUDIO_ONLY = 'AUDIO_ONL
 export const skills = ['clarity', 'structure', 'conciseness', 'audience_awareness'] as const;
 export type Skill = typeof skills[number];
 
+export interface PracticeSetup {
+  scenario: string;
+  audience: string;
+  goal: string;
+  requested_duration_seconds: number;
+}
+
 export interface AIFeedback {
   attempt_id: number;
   measurements: {

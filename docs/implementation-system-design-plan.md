@@ -445,7 +445,27 @@ Acceptance:
 - The panel does not claim long-term profile progress.
 - The UI gives Android a clear reference for the retry/history experience.
 
-### PR 5B: Android shell
+### Phase 5B: explicit web setup
+
+Deliver:
+
+- Add scenario, audience and goal setup to the web welcome flow.
+- Send setup fields when creating a practice session.
+- Preserve the focused 60-second product loop without adding generic dashboards.
+
+Implementation status:
+
+- `WelcomeScreen` collects scenario, audience and goal.
+- `analyzeRecording` passes setup into `createPracticeSession`.
+- Frontend tests cover the setup form and session-create payload.
+
+Acceptance:
+
+- The web app no longer feels like a fixed-demo loop.
+- Session context is explicit before recording.
+- The setup contract matches the backend `PracticeSessionCreate` schema.
+
+### PR 5C: Android shell
 
 Deliver:
 

@@ -1,4 +1,4 @@
-import { parsePracticeAttemptHistory, parsePracticeAttemptResult, PracticeAttemptHistory, PracticeAttemptResult } from '../types';
+import { parsePracticeAttemptHistory, parsePracticeAttemptResult, PracticeAttemptHistory, PracticeAttemptResult, PracticeSetup } from '../types';
 import { prepareAudio } from './audio';
 import type { Recording } from './recording';
 
@@ -22,11 +22,18 @@ export const getOwnerToken = () => {
   }
 };
 
-export const createPracticeSession = async (): Promise<number> => {
+const defaultSetup: PracticeSetup = {
+  scenario: 'Explain a technical project to a non-technical person in 60 seconds.',
+  audience: 'recruiter or non-technical interviewer',
+  goal: 'make the project understandable and relevant',
+  requested_duration_seconds: 60,
+};
+
+export const createPracticeSession = async (setup: PracticeSetup = defaultSetup): Promise<number> => {
   const response = await fetch(`${apiBase()}/api/practice-sessions`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'X-Owner-Token': getOwnerToken() },
-    body: JSON.stringify({}),
+    body: JSON.stringify(setup),
   });
   if (!response.ok) throw new Error('The backend could not create a practice session. Please try again.');
   const body = await response.json();
@@ -34,12 +41,12 @@ export const createPracticeSession = async (): Promise<number> => {
   return body.session_id;
 };
 
-export const analyzeRecording = async (recording: Recording, sessionId?: number | null): Promise<PracticeAttemptResult> => {
+export const analyzeRecording = async (recording: Recording, sessionId?: number | null, setup: PracticeSetup = defaultSetup): Promise<PracticeAttemptResult> => {
   let audio: Blob;
   try { audio = await prepareAudio(recording.audioBlob); }
   catch { throw new Error('Audio could not be prepared. You can review this recording or record again in another browser.'); }
 
-  const activeSessionId = sessionId ?? await createPracticeSession();
+  const activeSessionId = sessionId ?? await createPracticeSession(setup);
   const form = new FormData();
   form.append('audio', audio, 'recording.wav');
   form.append('duration_seconds', String(recording.durationSeconds));

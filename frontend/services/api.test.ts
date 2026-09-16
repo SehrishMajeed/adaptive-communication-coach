@@ -47,7 +47,35 @@ it('creates a practice session before the first session-scoped upload', async ()
   expect((await analyzeRecording(recording)).sessionId).toBe(42);
   expect(fetch.mock.calls[0][0]).toContain('/api/practice-sessions');
   expect(fetch.mock.calls[0][1].headers['X-Owner-Token']).toBeTruthy();
+  expect(JSON.parse(fetch.mock.calls[0][1].body)).toEqual({
+    scenario: 'Explain a technical project to a non-technical person in 60 seconds.',
+    audience: 'recruiter or non-technical interviewer',
+    goal: 'make the project understandable and relevant',
+    requested_duration_seconds: 60,
+  });
   expect(fetch.mock.calls[1][0]).toContain('/api/practice-sessions/42/attempts');
+});
+
+it('sends explicit scenario audience and goal when creating a practice session', async () => {
+  vi.mocked(prepareAudio).mockResolvedValue(new Blob(['pcm'], { type: 'audio/wav' }));
+  const fetch = vi.fn()
+    .mockResolvedValueOnce({ ok: true, json: async () => ({ session_id: 42 }) })
+    .mockResolvedValueOnce({ ok: true, json: async () => attemptContract });
+  vi.stubGlobal('fetch', fetch);
+
+  await analyzeRecording(recording, null, {
+    scenario: 'Explain my scholarship AI coach project.',
+    audience: 'CS professor',
+    goal: 'show rigorous AI engineering',
+    requested_duration_seconds: 60,
+  });
+
+  expect(JSON.parse(fetch.mock.calls[0][1].body)).toEqual({
+    scenario: 'Explain my scholarship AI coach project.',
+    audience: 'CS professor',
+    goal: 'show rigorous AI engineering',
+    requested_duration_seconds: 60,
+  });
 });
 
 it('loads owner-scoped practice session history', async () => {

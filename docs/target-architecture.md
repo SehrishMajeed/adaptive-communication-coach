@@ -97,6 +97,8 @@ Current Phase 4E implementation adds `GET /api/practice-sessions/{session_id}/at
 
 Current Phase 5A implementation uses that endpoint from the React prototype and renders a lightweight session history panel on the feedback screen. The panel shows durable attempt sequence, workflow route, WPM, evidence status and comparison verdict without claiming long-term skill progress.
 
+Current Phase 5B implementation adds explicit scenario, audience and goal setup to the React welcome flow. The client sends those fields when creating a practice session, so the backend no longer treats the web loop as a fixed-demo scenario.
+
 ## Failure and transaction boundaries
 
 - Reject unauthorized or invalid requests before processing; stable error codes distinguish invalid media, unavailable transcription, invalid evaluation, provider timeout and persistence failure. Frontend preserves a retryable local recording when appropriate.
