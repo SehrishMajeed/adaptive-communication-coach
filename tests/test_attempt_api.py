@@ -108,7 +108,7 @@ def test_practice_session_attempt_is_owned_versioned_and_sequence_scoped(client,
     evaluation = database.query(PracticeEvaluation).filter(PracticeEvaluation.attempt_id == first.json()["attempt_id"]).one()
     assert measurement.metric_version == METRIC_VERSION
     assert evaluation.prompt_version == EVALUATION_PROMPT_VERSION
-    assert evaluation.model_id == "gemini-2.5-flash"
+    assert evaluation.model_id == "gemini-3.6-flash"
     assert evaluation.schema_version == ATTEMPT_RESPONSE_SCHEMA_VERSION
     assert evaluation.rubric_version == RUBRIC_VERSION
     assert evaluation.evaluator_status == "completed"

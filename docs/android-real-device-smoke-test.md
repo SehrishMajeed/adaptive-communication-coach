@@ -1,6 +1,6 @@
 # Android Real-Device Smoke Test
 
-Status: blocked on 2026-09-17 because no Android device was connected to ADB and no backend Gemini key was configured. This file is the exact verification receipt for the attempted run; do not describe the real-device smoke test as passed until the checklist below is completed.
+Status: partially verified on 2026-09-17. Backend configuration and the live Gemini evaluation corpus passed locally, but the real-device Android smoke test is still blocked because no ADB-authorized Android device was connected. Do not describe the real-device smoke test as passed until the device checklist below is completed.
 
 ## Goal
 
@@ -14,10 +14,12 @@ backend running -> device connected -> app installed -> record -> review -> uplo
 
 Environment:
 
-- Commit: `73790cd Align public docs with verified Android milestone`
+- Commit: `158a33a Prepare real-device Android smoke test` plus local verification changes for Gemini schema/model compatibility.
 - Host OS: Windows 10.0.26200
 - ADB path: `C:\Users\sehri\AppData\Local\Android\Sdk\platform-tools\adb.exe`
 - ADB version: `1.0.41`, platform-tools `37.0.1-15733141`
+- Backend Gemini key: configured locally in ignored `backend/.env`; secret value is not recorded.
+- Live model: `gemini-3.6-flash`
 
 Commands run:
 
@@ -43,8 +45,35 @@ adb reverse exit code: 1
 Result:
 
 - No physical Android device was attached or authorized.
-- `backend/.env` was missing, so live Gemini evaluation could not be verified.
-- The smoke test did not run and must not be claimed as passed.
+- `adb reverse tcp:8000 tcp:8000` could not run because ADB had no device target.
+- The backend contract was verified with FastAPI `TestClient`: `/openapi.json` returned `200`, `POST /api/practice-sessions` returned `200`, and a numeric `session_id` was present.
+- Live Gemini corpus passed after updating the provider schema sanitizer, model default and synthetic speech fixture: `2` total, `2` passed, `0` failed.
+- The real-device record -> review -> upload -> feedback path did not run and must not be claimed as passed.
+
+## Live Gemini Receipt
+
+Command shape:
+
+```powershell
+python backend\scripts\evaluate_agent.py
+```
+
+Equivalent local run loaded `backend/.env` explicitly and wrote the report to `%TEMP%\auracoach-live-eval-report.md`.
+
+Observed summary:
+
+```text
+Live evaluation status: passed
+Live evaluation total: 2
+Live evaluation passed: 2
+Live evaluation failed: 0
+```
+
+Notes:
+
+- `bad_audio_abstain` passed as an abstention or explicitly allowed safe provider-unavailable outcome.
+- `good_technical_pitch` passed using committed synthetic speech audio.
+- The Google SDK emitted a non-blocking warning recommending the Interactions API instead of direct AFC through `generate_content`.
 
 ## Required Setup
 

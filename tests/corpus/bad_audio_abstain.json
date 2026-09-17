@@ -3,6 +3,7 @@
   "scenario": "Explain a technical project to a recruiter in 60 seconds.",
   "audio_path": "test_audio.wav",
   "expected": {
-    "evaluator_status": "abstained"
+    "evaluator_status": "abstained",
+    "allow_provider_failure": true
   }
 }

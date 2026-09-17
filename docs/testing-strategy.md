@@ -1,6 +1,6 @@
 # Testing strategy
 
-Status: active strategy. Current local evidence is 108 passing backend tests, 34 passing frontend tests, passing frontend/mobile TypeScript checks, passing frontend production build, passing mobile lint and passing mobile Jest. Normal CI must not need model credentials or make paid calls.
+Status: active strategy. Current local evidence is 109 passing backend tests, 34 passing frontend tests, passing frontend/mobile TypeScript checks, passing frontend production build, passing mobile lint and passing mobile Jest. Normal CI must not need model credentials or make paid calls.
 
 ## Test layers
 

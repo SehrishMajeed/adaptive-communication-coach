@@ -521,6 +521,6 @@ Phase 6 device hardening is complete for the repository-level checks below. The 
 - Release builds no longer reuse the debug keystore; production signing requires explicit `AURACOACH_RELEASE_*` environment variables.
 - Android ARM64 debug APK build is verified from a fresh short-path Windows checkout to avoid CMake path-length failures in native React Native modules.
 - Real-device recording, signed release builds, Play Console setup and staged rollout are not verified.
-- Real-device smoke testing is documented in `docs/android-real-device-smoke-test.md`; the first attempt was blocked because no ADB-authorized Android device was connected and no backend Gemini key was configured.
+- Real-device smoke testing is documented in `docs/android-real-device-smoke-test.md`; backend configuration and the live Gemini corpus are verified locally, but the Android device path remains blocked because no ADB-authorized phone was connected.
 
 The next step is the Final Project Review and wrap-up.

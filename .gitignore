@@ -34,6 +34,7 @@ temp/
 *.mp4
 *.webm
 *.wav
+!tests/corpus/*.wav
 *.mp3
 recordings/
 evaluation_report.md

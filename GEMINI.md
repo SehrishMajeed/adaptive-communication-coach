@@ -1,4 +1,4 @@
-# GEMINI.md — Adaptive Communication Coach Integration Rules
+# GEMINI.md â€” Adaptive Communication Coach Integration Rules
 
 Status: project-specific operating guide. This file adapts the hardening spirit of the supplied template to this repository only. It must not be treated as evidence that live Gemini behavior, production deployment, retention settings, or Play Store readiness have been verified.
 
@@ -14,7 +14,7 @@ Current wedge:
 
 - Provider code lives in `backend/app/services/llm_provider.py`.
 - The backend calls Gemini through the server only; frontend code must never contain provider keys.
-- Current model in code: `gemini-2.5-flash`.
+- Current model in code: `gemini-3.6-flash`.
 - Current generation temperature in code: `0.2`.
 - Current provider timeout: 45 seconds, one SDK attempt.
 - Raw audio is sent to the provider only after server-side WAV validation.
@@ -127,4 +127,3 @@ Use `docs/product-thesis.md` as the product north star:
 - preserve privacy by keeping video local;
 - make retry comparison honest;
 - do not overbuild dashboards, gamification, or adaptive learning before the core loop is verified.
-

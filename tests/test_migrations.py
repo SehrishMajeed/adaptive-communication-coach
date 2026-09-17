@@ -113,7 +113,7 @@ def test_phase2_constraints_reject_invalid_status_and_scores(migrated_engine):
                     strengths_json, weaknesses_json
                 )
                 VALUES (
-                    1, 'evaluation-audio-v1', 'gemini-2.5-flash', 'attempt-response-v1',
+                    1, 'evaluation-audio-v1', 'gemini-3.6-flash', 'attempt-response-v1',
                     'technical-explanation-v1', 'completed', 'usable', 'quote_verified',
                     'actionable', 11, 5, 5, 5, '[]', '[]'
                 )

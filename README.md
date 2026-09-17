@@ -77,7 +77,7 @@ npm run lint
 npm test
 ```
 
-Local verification on Python 3.14.4 / Node 26.4.0: **108 backend tests, 34 frontend tests, and the mobile test suite pass**, and TypeScript/production builds pass. Backend tests include actual multipart HTTP requests, real isolated SQLite round-trips, Alembic migration checks, session-scoped attempt APIs, ownership checks, persisted intervention/comparison behavior, evidence validation, abstention validation, offline evaluation fixtures, coaching policy tests, compiled workflow paths with a mocked provider and live-evaluation runner safety checks. The `evaluate_agent.py` runner is a manual live Gemini evaluation entry point; without `GEMINI_API_KEY`, it writes an explicit skipped report and makes no provider call. Frontend tests cover session-scoped upload, practice context visibility, review screen modes, evidence rendering and backend-owned comparison rendering. Mobile checks cover React Native typecheck, lint and rendering/navigation boundaries. A focused Android ARM64 debug APK build is verified from a fresh short-path Windows checkout because native module CMake builds can exceed path limits under long OneDrive paths. The SDK emits one deprecation warning on Python 3.14. Deterministic automated testing occurs via GitHub Actions (`.github/workflows/ci.yml`); live provider evaluation is manual via `.github/workflows/agentic_evaluation.yml`.
+Local verification on Python 3.14.4 / Node 26.4.0: **109 backend tests, 34 frontend tests, and the mobile test suite pass**, and TypeScript/production builds pass. Backend tests include actual multipart HTTP requests, real isolated SQLite round-trips, Alembic migration checks, session-scoped attempt APIs, ownership checks, persisted intervention/comparison behavior, evidence validation, abstention validation, offline evaluation fixtures, coaching policy tests, compiled workflow paths with a mocked provider and live-evaluation runner safety checks. The `evaluate_agent.py` runner is a manual live Gemini evaluation entry point; without `GEMINI_API_KEY`, it writes an explicit skipped report and makes no provider call. Frontend tests cover session-scoped upload, practice context visibility, review screen modes, evidence rendering and backend-owned comparison rendering. Mobile checks cover React Native typecheck, lint and rendering/navigation boundaries. A focused Android ARM64 debug APK build is verified from a fresh short-path Windows checkout because native module CMake builds can exceed path limits under long OneDrive paths. The SDK emits one deprecation warning on Python 3.14. Deterministic automated testing occurs via GitHub Actions (`.github/workflows/ci.yml`); live provider evaluation is manual via `.github/workflows/agentic_evaluation.yml`.
 
 ## What this demonstrates
 
@@ -88,7 +88,7 @@ Local verification on Python 3.14.4 / Node 26.4.0: **108 backend tests, 34 front
 
 For a scholarship, professor or recruiter review path, see [Portfolio case study](docs/portfolio-case-study.md).
 
-Normal CI uses mocked providers and no paid model calls. Live Gemini behavior, real-device recording compatibility, production deployment and model reliability benchmarks have not been verified.
+Normal CI uses mocked providers and no paid model calls. A local live Gemini corpus run passed on September 17, 2026 with backend-only credentials and `gemini-3.6-flash`; real-device recording compatibility, production deployment and broader model reliability benchmarks have not been verified.
 
 ## Manual verification
 

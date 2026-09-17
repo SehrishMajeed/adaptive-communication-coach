@@ -45,7 +45,7 @@ For a fast review, use this order:
 | Deterministic measurement | Duration, WPM and fillers are computed outside Gemini | Counts depend on transcript fidelity |
 | Product judgment | Narrow technical-explanation wedge and one-priority feedback | Product-market fit is not proven |
 | Durable coaching loop | Session-owned baseline, intervention, retry comparison and coaching workflow routes | Long-term profile updates are not implemented yet |
-| Software engineering quality | 106 backend tests, 34 frontend tests, mobile Jest tests, rigorous typecheck, build, and automated mobile CI workflow | Dependencies are not fully locked for production |
+| Software engineering quality | 109 backend tests, 34 frontend tests, mobile Jest tests, rigorous typecheck, build, and automated mobile CI workflow | Dependencies are not fully locked for production |
 | Android-first product direction | React Native Android app shell (`mobile/`), typed API clients, accessibility (a11y) roles, and safe observability logger | Android app is not published to Play Store yet |
 
 ## Resume bullets

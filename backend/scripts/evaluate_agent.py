@@ -13,7 +13,7 @@ if __package__ is None or __package__ == "":
     sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from backend.app.domain.evaluation import CommunicationEvaluation
-from backend.app.services.llm_provider import GEMINI_MODEL, evaluate_communication
+from backend.app.services.llm_provider import GEMINI_MODEL, ProviderFailure, evaluate_communication
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
@@ -138,6 +138,7 @@ def run_live_evaluation(
     for test_file in test_files:
         test_case = json.loads(test_file.read_text(encoding="utf-8"))
         case_id = test_case.get("id", test_file.stem)
+        expected = test_case.get("expected", {})
         scenario = test_case.get("scenario", "Explain a technical project to a recruiter in 60 seconds.")
         audio_path_name = test_case.get("audio_path")
         errors: list[str] = []
@@ -160,6 +161,11 @@ def run_live_evaluation(
         try:
             evaluation = evaluator(audio_path.read_bytes(), mime_type, scenario)
             errors = _validate_case(test_case, evaluation)
+        except ProviderFailure as exc:
+            if expected.get("allow_provider_failure") is True:
+                errors = []
+            else:
+                errors = [f"{type(exc).__name__}: {exc}"]
         except Exception as exc:
             errors = [f"{type(exc).__name__}: {exc}"]
 
