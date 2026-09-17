@@ -50,6 +50,31 @@ Result:
 - Live Gemini corpus passed after updating the provider schema sanitizer, model default and synthetic speech fixture: `2` total, `2` passed, `0` failed.
 - The real-device record -> review -> upload -> feedback path did not run and must not be claimed as passed.
 
+## Latest Device Check
+
+Second ADB check on commit `fcf4ade Verify live Gemini path and update Android smoke receipt`:
+
+```powershell
+& "$env:LOCALAPPDATA\Android\Sdk\platform-tools\adb.exe" kill-server
+& "$env:LOCALAPPDATA\Android\Sdk\platform-tools\adb.exe" start-server
+& "$env:LOCALAPPDATA\Android\Sdk\platform-tools\adb.exe" devices -l
+& "$env:LOCALAPPDATA\Android\Sdk\platform-tools\adb.exe" reverse tcp:8000 tcp:8000
+& "$env:LOCALAPPDATA\Android\Sdk\platform-tools\adb.exe" get-state
+```
+
+Observed output:
+
+```text
+List of devices attached
+
+adb.exe: no devices/emulators found
+adb reverse exit code: 1
+error: no devices/emulators found
+get-state exit code: 1
+```
+
+Windows present-device scan showed USB controllers/hubs but no Android, ADB, MTP, Pixel, Samsung, Xiaomi, OnePlus, Huawei, Motorola, Oppo, Vivo or Realme device. The device-side USB debugging authorization step remains incomplete.
+
 ## Live Gemini Receipt
 
 Command shape:
