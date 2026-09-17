@@ -44,7 +44,7 @@ uvicorn app.main:app --reload
 Schema migrations, from the repository root:
 
 ```sh
-alembic upgrade head
+python -m alembic upgrade head
 ```
 
 `DB_AUTO_CREATE=true` preserves the local prototype path. Release-style environments should use Alembic migrations deliberately instead of relying on import-time table creation.
@@ -66,7 +66,7 @@ From the repository root:
 ```sh
 python -m pytest tests/
 python -m backend.scripts.evaluate_agent
-alembic upgrade head
+python -m alembic upgrade head
 cd frontend
 npm run typecheck
 npm test
@@ -87,6 +87,8 @@ Local verification on Python 3.14.4 / Node 26.4.0: **109 backend tests, 34 front
 - Engineering maturity: privacy boundaries, crash reporting boundaries, accessibility (a11y) roles, known limitations, ADRs, roadmap and claim-to-evidence documentation.
 
 For a scholarship, professor or recruiter review path, see [Portfolio case study](docs/portfolio-case-study.md).
+
+For internal-test release preparation, see the [Release readiness pack](docs/release-readiness-pack.md). It covers the real-device Android smoke receipt, signed AAB steps, Play Store listing/Data safety/privacy drafts, Vercel readiness and Figma-ready screenshot storyboard.
 
 Normal CI uses mocked providers and no paid model calls. A local live Gemini corpus run passed on September 17, 2026 with backend-only credentials and `gemini-3.6-flash`; real-device recording compatibility, production deployment and broader model reliability benchmarks have not been verified.
 

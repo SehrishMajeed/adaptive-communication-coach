@@ -1,33 +1,26 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView } from 'react-native';
-import { Camera, useCameraDevice } from 'react-native-vision-camera';
+import { Camera, useCameraDevice, useVideoOutput } from 'react-native-vision-camera';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../app/NavigationTypes';
 import { logger } from '../shared/observability/logger';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Record'>;
 
-type LocalRecorderRef = {
-  startRecording: (options: {
-    onRecordingFinished: (video: { path: string }) => void;
-    onRecordingError: (error: Error) => void;
-  }) => void;
-  stopRecording: () => Promise<void>;
-};
-
 export const RecordScreen: React.FC<Props> = ({ navigation, route }) => {
   const { setup, sessionId } = route.params;
   const device = useCameraDevice('front');
-  const camera = useRef<LocalRecorderRef | null>(null);
+  const videoOutput = useVideoOutput({ enableAudio: true });
+  const recorder = useRef<{ stopRecording: () => Promise<void> } | null>(null);
   const durationRef = useRef(0);
   
   const [isRecording, setIsRecording] = useState(false);
   const [timeLeft, setTimeLeft] = useState(setup.requested_duration_seconds);
 
   const handleStopRecording = useCallback(async () => {
-    if (!camera.current || !isRecording) return;
+    if (!recorder.current || !isRecording) return;
     setIsRecording(false);
-    await camera.current.stopRecording();
+    await recorder.current.stopRecording();
   }, [isRecording]);
 
   useEffect(() => {
@@ -44,14 +37,21 @@ export const RecordScreen: React.FC<Props> = ({ navigation, route }) => {
   }, [handleStopRecording, isRecording, timeLeft]);
 
   const handleStartRecording = async () => {
-    if (!camera.current) return;
-    setIsRecording(true);
-    setTimeLeft(setup.requested_duration_seconds);
-    durationRef.current = 0;
-    
-    camera.current.startRecording({
-      onRecordingFinished: (video) => {
-        const uri = video.path.startsWith('file://') ? video.path : `file://${video.path}`;
+    if (isRecording) return;
+    try {
+      const nextRecorder = await videoOutput.createRecorder({
+        maxDuration: setup.requested_duration_seconds,
+      });
+      recorder.current = nextRecorder;
+      setIsRecording(true);
+      setTimeLeft(setup.requested_duration_seconds);
+      durationRef.current = 0;
+
+      await nextRecorder.startRecording(
+        (path) => {
+          recorder.current = null;
+          setIsRecording(false);
+          const uri = path.startsWith('file://') ? path : `file://${path}`;
         navigation.replace('Review', {
           setup,
           sessionId,
@@ -59,9 +59,18 @@ export const RecordScreen: React.FC<Props> = ({ navigation, route }) => {
           audioUri: uri,
           durationSeconds: Math.max(durationRef.current, 1),
         });
-      },
-      onRecordingError: (error) => logger.error(error),
-    });
+        },
+        (error) => {
+          recorder.current = null;
+          setIsRecording(false);
+          logger.error(error);
+        },
+      );
+    } catch (error) {
+      recorder.current = null;
+      setIsRecording(false);
+      logger.error(error instanceof Error ? error : new Error(String(error)));
+    }
   };
 
   if (device == null) return <SafeAreaView style={styles.container}><Text style={styles.text}>No Camera Device Found</Text></SafeAreaView>;
@@ -72,7 +81,7 @@ export const RecordScreen: React.FC<Props> = ({ navigation, route }) => {
         style={StyleSheet.absoluteFill}
         device={device}
         isActive={true}
-        ref={camera as React.Ref<never>}
+        outputs={[videoOutput]}
       />
       
       <View style={styles.overlay}>

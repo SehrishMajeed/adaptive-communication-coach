@@ -35,4 +35,7 @@ jest.mock('react-native-permissions', () => require('react-native-permissions/mo
 jest.mock('react-native-vision-camera', () => ({
   Camera: () => null,
   useCameraDevice: () => ({ position: 'front' }),
+  useVideoOutput: () => ({
+    createRecorder: jest.fn(),
+  }),
 }));

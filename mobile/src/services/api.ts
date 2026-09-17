@@ -27,6 +27,11 @@ const defaultSetup: PracticeSetup = {
   requested_duration_seconds: 60,
 };
 
+const isWavAudioUri = (uri: string) => {
+  const path = uri.split('?')[0].toLowerCase();
+  return path.endsWith('.wav') || path.endsWith('.wave');
+};
+
 export const createPracticeSession = async (setup: PracticeSetup = defaultSetup): Promise<number> => {
   const token = await getOwnerToken();
   const response = await fetch(`${apiBase()}/api/practice-sessions`, {
@@ -47,6 +52,10 @@ export const createPracticeSession = async (setup: PracticeSetup = defaultSetup)
 };
 
 export const analyzeRecording = async (recording: Recording, sessionId?: number | null, setup: PracticeSetup = defaultSetup): Promise<PracticeAttemptResult> => {
+  if (!isWavAudioUri(recording.audioUri)) {
+    throw new Error('Android feedback upload is blocked until the app extracts a mono PCM WAV audio file from the local recording.');
+  }
+
   const activeSessionId = sessionId ?? await createPracticeSession(setup);
   const token = await getOwnerToken();
   

@@ -523,4 +523,4 @@ Phase 6 device hardening is complete for the repository-level checks below. The 
 - Real-device recording, signed release builds, Play Console setup and staged rollout are not verified.
 - Real-device smoke testing is documented in `docs/android-real-device-smoke-test.md`; backend configuration and the live Gemini corpus are verified locally, but the Android device path remains blocked because no ADB-authorized phone was connected.
 
-The next step is the Final Project Review and wrap-up.
+The next step is the Full Release Readiness Pack: real-device Android proof, signed internal-test artifact, Play Store policy drafts, Vercel readiness and Figma-ready screenshot storyboard. The living checklist is in [Release readiness pack](release-readiness-pack.md).

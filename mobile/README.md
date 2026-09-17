@@ -8,11 +8,13 @@ The Android app is intentionally narrow:
 
 - Practice one technical project explanation for a recruiter or nontechnical listener.
 - Keep video replay local to the device.
-- Upload only the extracted audio track to the backend.
+- Upload only the extracted mono PCM16 WAV audio track to the backend.
 - Show AI feedback only when the backend returns validated, evidence-grounded output.
 - Keep retry comparison backend-owned instead of relying on frontend memory.
 
 Do not present this client as Play Store production-ready until real-device recording, release signing, privacy disclosures and staged rollout are verified.
+
+For the full internal-test release checklist, signed AAB receipt and Play Store draft copy, see [Release readiness pack](../docs/release-readiness-pack.md).
 
 ## Local Setup
 
@@ -64,6 +66,12 @@ npm test
 
 These checks validate TypeScript, lint rules and React Native rendering/navigation boundaries. They do not replace real-device camera, microphone or upload testing.
 
+## Android Audio Extraction
+
+The review flow uses a small Android native bridge to decode the local recording's audio track and write a mono PCM16 WAV file in app cache before upload. The backend rejects video files and non-WAV audio, so the client must upload that extracted WAV rather than the local MP4/MOV recording.
+
+Real-device verification must confirm the extracted file passes backend media validation and that the video file itself is not sent.
+
 ## Android Debug Build
 
 React Native native modules can exceed Windows CMake path limits when this repo lives under a long OneDrive path. For local Android verification on Windows, use a short working path and build a focused ARM64 debug APK:
@@ -84,6 +92,13 @@ Release signing is intentionally not configured with the debug keystore. A relea
 - `AURACOACH_RELEASE_KEY_PASSWORD`
 
 Never commit `.keystore` or `.jks` files. The root `.gitignore` blocks those files, but secret handling still depends on local and CI discipline.
+
+Build a signed release AAB only after those variables are set:
+
+```sh
+cd android
+./gradlew :app:bundleRelease --no-daemon --max-workers=1
+```
 
 ## Unverified Release Gates
 

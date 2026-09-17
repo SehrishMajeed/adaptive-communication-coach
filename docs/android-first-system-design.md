@@ -147,6 +147,7 @@ These are release constraints to verify again before publishing:
 - As of September 16, 2026, Google Play says new apps and updates must target Android 16 / API level 36 or higher from August 31, 2026.
 - Google Play requires developers to complete the Data safety form describing collection, sharing and protection of user data.
 - The app will need privacy policy, account/data deletion decisions, permission rationale, release signing, internal testing and staged rollout before public release.
+- The current internal-test checklist and drafts live in [Release readiness pack](release-readiness-pack.md).
 
 Official references:
 

@@ -52,6 +52,86 @@ Result:
 
 ## Latest Device Check
 
+Fresh short-path Android build receipt during release-readiness hardening:
+
+```powershell
+# Fresh short-path working copy, no copied node_modules
+robocopy <repo> C:\acc-fresh-232459 /E /XD .git node_modules dist build .gradle .cxx __pycache__ .pytest_cache
+cd C:\acc-fresh-232459\mobile
+npm ci
+cd android
+$env:ANDROID_HOME="$env:LOCALAPPDATA\Android\Sdk"
+$env:ANDROID_SDK_ROOT=$env:ANDROID_HOME
+.\gradlew.bat :app:assembleDebug --no-daemon --max-workers=1 -PreactNativeArchitectures=arm64-v8a
+```
+
+Observed result:
+
+```text
+C:\acc-fresh-232459\mobile\android\app\build\outputs\apk\debug\app-debug.apk
+Size: 66,494,705 bytes
+LastWriteTime: 2026-09-17 23:33:35
+```
+
+ADB install check:
+
+```powershell
+& "$env:LOCALAPPDATA\Android\Sdk\platform-tools\adb.exe" devices -l
+```
+
+Observed output:
+
+```text
+List of devices attached
+```
+
+Result:
+
+- Fresh short-path build with clean `npm ci` passed and produced a debug APK.
+- Install and real-device smoke remain blocked because no physical Android device or emulator is attached/authorized.
+
+Follow-up ADB/device gate check:
+
+```powershell
+& "$env:LOCALAPPDATA\Android\Sdk\platform-tools\adb.exe" devices -l
+Test-Path "C:\acc-fresh-232459\mobile\android\app\build\outputs\apk\debug\app-debug.apk"
+```
+
+Observed output:
+
+```text
+List of devices attached
+
+APK exists: True
+APK path: C:\acc-fresh-232459\mobile\android\app\build\outputs\apk\debug\app-debug.apk
+APK size: 66,494,705 bytes
+APK LastWriteTime: 2026-09-17 23:33:35
+```
+
+Result:
+
+- The debug APK remains available for install.
+- `adb install` was not run because no target device is listed.
+- Next valid step is to connect a physical Android phone, enable USB debugging, accept the RSA prompt, then rerun this section and install the APK.
+
+Third ADB check during release-readiness hardening:
+
+```powershell
+& "$env:LOCALAPPDATA\Android\Sdk\platform-tools\adb.exe" devices -l
+```
+
+Observed output:
+
+```text
+List of devices attached
+```
+
+Result:
+
+- ADB is available, but no physical Android device or emulator is attached/authorized.
+- Real-device smoke testing remains blocked.
+- A hidden mobile upload contract issue was found during inspection: the React Native client was using the recorded video URI as `audio/wav`. The client now records local video with audio, extracts the audio track to a mono PCM16 WAV file through an Android native bridge, and uploads the extracted WAV. The remaining gate is real-device verification of that path.
+
 Second ADB check on commit `fcf4ade Verify live Gemini path and update Android smoke receipt`:
 
 ```powershell

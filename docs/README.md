@@ -5,9 +5,11 @@ The repository is a prototype with a corrected first vertical slice and remainin
 - [Current-state audit](current-state-audit.md): end-to-end trace, prioritized findings, verification results, claim ledger and first implementation PR.
 - [Product](product.md): focused user problem, practice loop, principles and candidate success measures.
 - [Product thesis](product-thesis.md): painkiller wedge, product patterns to copy, validation questions and system direction.
+- [Product and AI engineering alignment](product-ai-engineering-alignment.md): user pain, competitor inspiration, prompting/judging loop and Lovable/Figma transfer brief.
 - [Project alignment audit](project-alignment-audit.md): product, prompt, architecture and setup judgment against the painkiller wedge.
 - [Portfolio case study](portfolio-case-study.md): scholarship/recruiter story, claim-to-evidence ledger, resume bullets and demo script.
 - [Android-first system design](android-first-system-design.md): Play Store direction, app architecture, API evolution and release-readiness path.
+- [Release readiness pack](release-readiness-pack.md): Android device proof, signed AAB, Play Store drafts, Data safety, privacy policy, Vercel readiness and Figma-ready visual handoff.
 - [Engineering practices](engineering-practices.md): software, AI, ML/evaluation and Android standards for the project.
 - [Implementation and system design plan](implementation-system-design-plan.md): narrowed source-aligned PR sequence from durable backend sessions to Android release path.
 - [PR 1 manual verification log](pr1-manual-verification.md): partial local verification, blockers and remaining live checklist.

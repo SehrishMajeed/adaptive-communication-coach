@@ -4,6 +4,7 @@ import Video from 'react-native-video';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../app/NavigationTypes';
 import { analyzeRecording } from '../services/api';
+import { extractMonoPcmWav } from '../services/audioExtractor';
 import { Loader } from '../components/Loader';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Review'>;
@@ -15,7 +16,8 @@ export const ReviewScreen: React.FC<Props> = ({ navigation, route }) => {
   const handleSubmit = async () => {
     setIsSubmitting(true);
     try {
-      const result = await analyzeRecording({ audioUri, videoUri, durationSeconds }, sessionId, setup);
+      const wavAudioUri = await extractMonoPcmWav(audioUri);
+      const result = await analyzeRecording({ audioUri: wavAudioUri, videoUri, durationSeconds }, sessionId, setup);
       navigation.replace('Feedback', { setup, result });
     } catch (error) {
       setIsSubmitting(false);
