@@ -59,7 +59,7 @@ Use only bullets that match the exact current repository state:
 - Built durable practice sessions with anonymous ownership, session-scoped idempotent attempts, persisted interventions and backend-owned retry comparisons.
 - Implemented a complete React Native Android application shell encompassing the full coaching loop, including device camera permissions, local replay, and typed API clients.
 - Hardened the Android application for production release with an automated GitHub Actions CI pipeline, extensive accessibility (a11y) properties, and a PII-safe observability logging boundary.
-- Built an automated Agentic Evaluation CI Pipeline (`evaluate_agent.py`) to benchmark LLM outputs on latency, abstention, and accuracy against a golden audio corpus without blocking traditional test suites.
+- Built an offline evaluation suite plus a manually triggered live Gemini evaluation gate (`evaluate_agent.py`) to benchmark LLM outputs on latency, abstention, and accuracy against a golden audio corpus without blocking deterministic test suites.
 - Wrote backend, frontend, and mobile regression tests covering media validation, provider failures, API contract shape, recording cleanup and feedback comparison.
 
 Do not claim production scale, personalization, durable agentic memory, Play Store launch, or verified learning outcomes yet.

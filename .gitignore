@@ -24,6 +24,8 @@ adaptive_coach.db
 # Secrets & Credentials
 *.pem
 *.key
+*.keystore
+*.jks
 credentials/
 
 # Temporary Files

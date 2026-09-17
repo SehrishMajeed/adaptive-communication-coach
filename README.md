@@ -1,10 +1,12 @@
 # Adaptive Communication Coach
 
+[![CI](https://github.com/SehrishMajeed/adaptive-communication-coach/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/SehrishMajeed/adaptive-communication-coach/actions/workflows/ci.yml)
+
 **Prototype — not production-ready.** Practice a technical explanation, review the recording locally, and request audio-based AI suggestions. Personalized coaching and verified improvement are not implemented.
 
 ## Portfolio positioning
 
-This project is intentionally shaped as a practical AI engineering product: a Python/FastAPI backend, React/Vite frontend, Gemini provider boundary, structured AI output validation, deterministic measurement code, privacy-aware media handling, and an in-memory retry comparison loop. It is not yet an agentic product; the roadmap points toward agentic coaching once durable interventions, ownership, evidence validation, and profile-safe comparison are implemented.
+This project is intentionally shaped as a practical AI engineering product: a Python/FastAPI backend, React/Vite frontend, React Native Android client, Gemini provider boundary, structured AI output validation, deterministic measurement code, privacy-aware media handling, durable practice sessions, persisted interventions, and backend-owned retry comparison. It is not yet a fully agentic product; the roadmap points toward agentic coaching once the system can autonomously choose and adapt interventions across a longer learner profile.
 
 ## Current flow
 
@@ -71,16 +73,17 @@ npm test
 npm run build
 cd ../mobile
 npm run typecheck
+npm run lint
 npm test
 ```
 
-Local verification on Python 3.14.4 / Node 26.4.0: **108 backend tests, 34 frontend tests, and the mobile test suite pass**, and TypeScript/production builds pass. Backend tests include actual multipart HTTP requests, real isolated SQLite round-trips, Alembic migration checks, session-scoped attempt APIs, ownership checks, persisted intervention/comparison behavior, evidence validation, abstention validation, offline evaluation fixtures, coaching policy tests, compiled workflow paths with a mocked provider and live-evaluation runner safety checks. The `evaluate_agent.py` runner is a manual live Gemini evaluation entry point; without `GEMINI_API_KEY`, it writes an explicit skipped report and makes no provider call. Frontend tests cover session-scoped upload, practice context visibility, review screen modes, evidence rendering and backend-owned comparison rendering. Mobile tests cover the React Native rendering and navigation boundaries. The SDK emits one deprecation warning on Python 3.14. Deterministic automated testing occurs via GitHub Actions (`.github/workflows/ci.yml`); live provider evaluation is manual via `.github/workflows/agentic_evaluation.yml`.
+Local verification on Python 3.14.4 / Node 26.4.0: **108 backend tests, 34 frontend tests, and the mobile test suite pass**, and TypeScript/production builds pass. Backend tests include actual multipart HTTP requests, real isolated SQLite round-trips, Alembic migration checks, session-scoped attempt APIs, ownership checks, persisted intervention/comparison behavior, evidence validation, abstention validation, offline evaluation fixtures, coaching policy tests, compiled workflow paths with a mocked provider and live-evaluation runner safety checks. The `evaluate_agent.py` runner is a manual live Gemini evaluation entry point; without `GEMINI_API_KEY`, it writes an explicit skipped report and makes no provider call. Frontend tests cover session-scoped upload, practice context visibility, review screen modes, evidence rendering and backend-owned comparison rendering. Mobile checks cover React Native typecheck, lint and rendering/navigation boundaries. A focused Android ARM64 debug APK build is verified from a fresh short-path Windows checkout because native module CMake builds can exceed path limits under long OneDrive paths. The SDK emits one deprecation warning on Python 3.14. Deterministic automated testing occurs via GitHub Actions (`.github/workflows/ci.yml`); live provider evaluation is manual via `.github/workflows/agentic_evaluation.yml`.
 
 ## What this demonstrates
 
 - Product development: a narrow, high-pain communication practice loop instead of a generic AI wrapper.
 - AI engineering: versioned prompts, bounded Gemini output, schema validation, timeout control, safe failure behavior, offline evaluation fixtures, and a manual live Gemini evaluation gate.
-- Full-stack execution: React/React Native media capture/review, FastAPI validation/persistence, GitHub Actions CI/CD automated validation, and contract tests across backend, web frontend, and mobile.
+- Full-stack execution: React/React Native media capture/review, FastAPI validation/persistence, GitHub Actions CI validation, and contract tests across backend, web frontend, and mobile.
 - Engineering maturity: privacy boundaries, crash reporting boundaries, accessibility (a11y) roles, known limitations, ADRs, roadmap and claim-to-evidence documentation.
 
 For a scholarship, professor or recruiter review path, see [Portfolio case study](docs/portfolio-case-study.md).

@@ -513,10 +513,13 @@ Acceptance:
 
 ## Definition of "done" for the next step
 
-Phase 6 (Device testing, hardening, and release pipeline) is now fully complete. We have successfully verified:
+Phase 6 device hardening is complete for the repository-level checks below. The release pipeline and real-device acceptance remain future release gates:
 
-- GitHub Actions CI pipeline added for React Native testing and typechecking (`.github/workflows/ci.yml`).
+- GitHub Actions CI pipeline added for React Native testing, typechecking, linting and tests (`.github/workflows/ci.yml`).
 - Accessibility props (`accessibilityRole`, `accessibilityLabel`, `accessibilityHint`) added to core navigation and interaction buttons across all Android screens.
 - PII-safe observability logging boundary created at `mobile/src/shared/observability/logger.ts` for safe integration with external crash reporters like Sentry.
+- Release builds no longer reuse the debug keystore; production signing requires explicit `AURACOACH_RELEASE_*` environment variables.
+- Android ARM64 debug APK build is verified from a fresh short-path Windows checkout to avoid CMake path-length failures in native React Native modules.
+- Real-device recording, signed release builds, Play Console setup and staged rollout are not verified.
 
 The next step is the Final Project Review and wrap-up.

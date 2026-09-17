@@ -1,4 +1,4 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+This React Native client implements the focused practice loop: setup, record locally, review privately, receive one evidence-backed target, retry and compare. It uses the same backend contract as the web prototype.
 
 # Getting Started
 
@@ -81,6 +81,33 @@ You've successfully run and modified your React Native App. :partying_face:
 
 - If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
 - If you're curious to learn more about React Native, check out the [docs](https://reactnative.dev/docs/getting-started).
+
+# Quality checks
+
+```sh
+npm run typecheck
+npm run lint
+npm test
+```
+
+## Android debug build
+
+React Native native modules can exceed Windows CMake path limits when this repo lives under a long OneDrive path. For local Android verification on Windows, use a short working path and build a focused ARM64 debug APK:
+
+```sh
+gradlew.bat :app:assembleDebug --no-daemon --max-workers=1 -PreactNativeArchitectures=arm64-v8a
+```
+
+## Release signing
+
+Release signing is intentionally not configured with the debug keystore. A release build requires these environment variables, supplied by a secret manager or a secure local shell:
+
+- `AURACOACH_RELEASE_STORE_FILE`
+- `AURACOACH_RELEASE_STORE_PASSWORD`
+- `AURACOACH_RELEASE_KEY_ALIAS`
+- `AURACOACH_RELEASE_KEY_PASSWORD`
+
+Real-device recording, signed release artifacts, Play Console configuration and staged rollout are not yet verified.
 
 # Troubleshooting
 
