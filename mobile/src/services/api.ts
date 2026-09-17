@@ -1,4 +1,3 @@
-import { Platform } from 'react-native';
 import { parsePracticeAttemptHistory, parsePracticeAttemptResult, PracticeAttemptHistory, PracticeAttemptResult, PracticeSetup } from '../../../shared/types';
 import { logger } from '../shared/observability/logger';
 import type { Recording } from './recording';
@@ -10,11 +9,10 @@ type ReactNativeFilePart = {
   name: string;
 };
 
-const apiBase = () => {
+export const apiBase = () => {
   if (__DEV__) {
-    return Platform.OS === 'android' ? 'http://10.0.2.2:8000' : 'http://localhost:8000';
+    return 'http://localhost:8000';
   }
-  // Production URL would be loaded from env or config
   return 'https://api.yourdomain.com';
 };
 

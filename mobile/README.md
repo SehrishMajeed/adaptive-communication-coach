@@ -44,6 +44,14 @@ npm run android
 
 Use the backend API configured for your local or staging environment. Do not put Gemini/provider secrets in the mobile app.
 
+For a physical Android device, keep the backend on the host and reverse port `8000` before launching the app:
+
+```sh
+adb reverse tcp:8000 tcp:8000
+```
+
+The dev client uses `http://localhost:8000`, which works with `adb reverse` on a real device.
+
 ## Quality Checks
 
 Run these before committing mobile changes:
