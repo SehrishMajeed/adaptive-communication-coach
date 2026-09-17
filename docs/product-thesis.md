@@ -1,6 +1,6 @@
 # Product thesis: painkiller wedge
 
-Status: product strategy and validation plan, not shipped capability. The goal is to turn an unspoken pain into a narrow product loop that can be verified before scaling.
+Status: product strategy plus current implementation guardrails. The goal is to turn an unspoken pain into a narrow product loop that can be verified before scaling.
 
 ## Builder positioning
 
@@ -8,13 +8,13 @@ This project should present the builder as a CS student focused on AI engineerin
 
 The honest current positioning is:
 
-> Practical AI product now; clear path toward agentic coaching after the retry/intervention loop becomes durable, evidence-grounded, and profile-safe.
+> Practical AI product now; clear path toward agentic coaching after the durable retry/intervention loop becomes profile-safe and adaptively chooses follow-up coaching over time.
 
 That means the repository should show:
 
 - product taste: one painful user problem, not a generic AI wrapper;
 - AI engineering: provider isolation, schema validation, prompt discipline, failure boundaries, and cost/privacy awareness;
-- agentic thinking: a prototype retry loop today and a future stateful coaching loop with explicit validation, diagnosis, intervention, durable comparison, and evidence-gated profile updates, without claiming that full loop is shipped today;
+- agentic thinking: a durable retry loop today and a future stateful coaching loop with explicit validation, diagnosis, intervention, comparison and evidence-gated profile updates, without claiming that full adaptive loop is shipped today;
 - software engineering: tests, documentation, architecture decisions, honest limitations, and reproducible setup;
 - restraint: no claims of personalization, production readiness, or verified improvement until the system earns them.
 
@@ -123,16 +123,15 @@ Why this wedge:
 
 ## System direction
 
-Proceed in this order:
+Current system direction:
 
-1. Finish PR 1 manual acceptance: live Gemini path, real browser recording, audio-only upload, replay modes, and recoverable errors.
-2. Implement Phase 2A domain schema and Alembic migrations before shared-user history.
-3. Add anonymous ownership and session context before any personalization.
-4. Promote the in-memory baseline-to-retry loop into a durable, owned session model for one fixed scenario.
-5. Add evidence-grounded evaluation before claiming adaptive coaching.
-6. Build the Android client after the backend loop has durable sessions, ownership and comparable retry semantics.
+1. Keep deterministic CI provider-free and green.
+2. Keep live Gemini/browser/device checks manual until credentials, devices and rollout targets are intentionally configured.
+3. Continue hardening the Android-first client against the durable backend session APIs.
+4. Add release validation only after real-device media behavior, signed artifacts, privacy disclosures and internal testing are verified.
+5. Add adaptive profile updates only after enough consented evidence proves the retry loop is useful.
 
-The current React web app remains a proof of the capture/evaluation path. The Android product should reuse the same backend contracts and follow [Android-first system design](android-first-system-design.md).
+The React web app remains the browser proof of the capture/evaluation path. The Android product reuses the same backend contracts and follows [Android-first system design](android-first-system-design.md).
 
 ## Validation questions
 

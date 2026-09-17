@@ -1,6 +1,6 @@
 # Project alignment audit
 
-Status: implementation and product judgment snapshot for the current repository. This is an evidence-based planning document, not proof of live Gemini behavior or user demand.
+Status: historical implementation and product judgment snapshot generated before the later durable-session, evidence-grounded, workflow-routing and Android-shell milestones. Keep it as an audit artifact, not as the current source of truth. Current status is summarized in the root README, target architecture and implementation plan.
 
 Generated: 2026-09-16
 
@@ -14,25 +14,25 @@ The strongest product shape is not a generic public-speaking app. It is a privat
 
 > record one technical explanation, get one evidence-backed improvement target, retry the same task, and compare honestly.
 
-The codebase is correctly moving toward that direction, especially around audio-only upload, bounded Gemini output, transcript-based deterministic metrics, local video review, in-memory retry comparison, and honest non-production documentation. It still does not deliver the full painkiller loop: explicit audience/task setup, one drill as a durable intervention, ownership, or evidence-backed progress.
+The codebase is correctly moving toward that direction, especially around audio-only upload, bounded Gemini output, transcript-based deterministic metrics, local video review, durable session-scoped retry comparison, explicit practice setup and honest non-production documentation. It still does not prove live Gemini quality, real-device Android media reliability, production release readiness or user demand.
 
 As a portfolio artifact, the project should communicate:
 
 > CS student focused on AI engineering, agentic systems, and building practical AI products with Python, React, and modern AI tools.
 
-The repo mostly supports that positioning already. It has a real AI product wedge, Python/FastAPI backend, React frontend, Gemini integration, LangGraph workflow seam, validation tests, architecture docs, and a prototype retry comparison loop. The honest current claim is: practical AI product with a credible path toward agentic coaching. The main danger is overclaiming agentic or production capability before durable interventions, ownership, migrations, and evidence validation exist.
+The repo supports that positioning with a real AI product wedge, Python/FastAPI backend, React frontend, React Native Android shell, Gemini integration boundary, workflow seam, validation tests, architecture docs, durable interventions, evidence validation and backend-owned retry comparison. The honest current claim is: practical AI product with a credible path toward agentic coaching. The main danger is now overclaiming production deployment, live model reliability, real-device compatibility or long-term adaptive learning before those gates are verified.
 
 ## Alignment scorecard
 
 | Area | Current alignment | Judgment |
 | --- | --- | --- |
 | User pain | Strong in docs; partially visible in UI | The thesis is sharp, but the app still feels like a prototype feedback form. |
-| Product loop | Baseline recording, feedback, and in-memory retry comparison exist | Durable intervention persistence is not implemented. |
+| Product loop | Baseline recording, feedback, durable intervention and backend-owned retry comparison exist | Long-term adaptive profile updates are not implemented. |
 | Privacy promise | Good technical direction | Video stays local by design, but manual browser verification remains incomplete. |
-| AI boundary | Good for Phase 1 | Gemini is schema-bounded and forbidden from metrics/visual claims, but evidence spans and prompt versioning are still missing. |
-| Architecture | Appropriate modular monolith | Phase 2 needs Alembic, ownership, session context, measurement/evaluation split. |
-| Setup | Good local/CI baseline | Runtime dependencies are unpinned and live Gemini/device path is not verified. |
-| Android ambition | Directionally valid later | Do not start Android until the backend loop is truthful and manually verified. |
+| AI boundary | Stronger than Phase 1 | Gemini is schema-bounded, evidence-grounded and versioned, but live reliability benchmarks remain unverified. |
+| Architecture | Appropriate modular monolith | Durable sessions, Alembic, ownership and workflow routes exist; production deployment/retention work remains. |
+| Setup | Good local/CI baseline | CI is green; live Gemini/device path is not verified. |
+| Android ambition | Implemented shell, not release-ready | Continue Android hardening before any Play Store claim. |
 
 ## What is already aligned
 
@@ -48,57 +48,28 @@ The repo mostly supports that positioning already. It has a real AI product wedg
 
 ## Misalignment and risk list
 
-### P0 gate: manual acceptance is still incomplete
+### P0 gate: live manual acceptance is still incomplete
 
-Phase 2 architecture should not begin until `docs/pr1-manual-verification.md` is completed with a valid backend Gemini key and real Chrome DevTools evidence.
+Durable architecture has proceeded through deterministic tests, but live manual acceptance still requires `docs/pr1-manual-verification.md` to be completed with a valid backend Gemini key and real Chrome DevTools/device evidence.
 
 Why it matters:
 
 - The product is built around trust.
 - If audio-only upload or live Gemini rendering fails in a real browser, schema work would be premature.
 
-### P1: the app does not yet complete the core painkiller loop
+### P1: the app still needs real-device proof of the core painkiller loop
 
-Current implementation:
+Current implementation includes record, review, one target, drill, retry and backend-owned comparison. The remaining risk is not the code shape; it is proving that the loop works on real devices with real backend credentials and acceptable latency/failure behavior.
 
-- record;
-- review;
-- get scores/suggestions;
-- restart.
+### P1: task context is explicit but not yet user-validated
 
-Painkiller loop needed:
+The web and backend now support scenario, audience and goal setup. The next product risk is whether users understand and value that setup quickly enough in a mobile flow.
 
-- record;
-- identify one priority;
-- give one drill;
-- retry same explanation;
-- compare the same target.
+### P1: persistence supports the target domain but release policy remains incomplete
 
-The latest UI copy, deterministic drill mapping, and in-memory retry comparison improve the feel, but durable comparison remains Phase 4 work after ownership/domain architecture.
+The durable schema now separates owned practice sessions, attempts, evaluations, measurements, interventions, comparisons and workflow audit fields. The remaining production work is retention/deletion policy, managed database deployment and privacy-reviewable operational behavior.
 
-### P1: task context is hardcoded
-
-Backend uses one fixed scenario:
-
-```text
-Explain a technical project to a non-technical person in 60 seconds.
-```
-
-This is acceptable for PR 1. It becomes a blocker before personalization because the product thesis requires audience and goal to be part of the task context.
-
-### P1: persistence does not match target domain
-
-`CoachingAttempt` still contains transcript, measurements, and evaluations in one flattened table. This is intentionally pre-Phase-2, but it should not be extended further.
-
-Next schema must split:
-
-- user ownership;
-- practice session/task context;
-- attempt lifecycle;
-- measurement sets;
-- evaluations.
-
-### P1: prompt is safe but not yet evidence-grounded
+### P1: prompt is evidence-grounded but not live-benchmarked
 
 Current prompt is good for safety:
 
@@ -107,30 +78,26 @@ Current prompt is good for safety:
 - forbids visual/confidence/pacing/filler claims;
 - uses structured response schema.
 
-Missing for the future:
+Remaining future work:
 
-- prompt version constant;
-- rubric version constant;
-- evidence references or quoted transcript spans;
-- abstention/status field;
-- model/provider metadata in persisted records.
+- budgeted live reliability runs;
+- human rubric comparison;
+- latency/cost reporting;
+- held-out corpus versioning.
 
-Do not add evidence claims to the UI before schema supports them.
+### P2: setup is improved but not release-grade
 
-### P2: setup is functional but not release-grade
-
-- Python requirements are unpinned.
-- Runtime and dev requirements are minimal but not locked.
-- SQLite import-time schema creation remains.
-- There is no Alembic.
+- No production deployment path is selected.
+- No managed database, backup/restore or migration rollout is rehearsed.
 - No rate limiting or cost tracking exists.
-- No auth/ownership exists.
+- Anonymous owner tokens are not a full authentication system.
+- Real-device recording, signed release and Play Console rollout remain unverified.
 
 These are not blockers for the local prototype, but they are blockers for public/shared deployment.
 
 ## Prompt and AI assessment
 
-### Current prompt grade: B for Phase 1, C for product vision
+### Current prompt grade: B+ for the prototype, incomplete for production evidence
 
 Strengths:
 
@@ -142,21 +109,17 @@ Strengths:
 
 Weaknesses:
 
-- inline prompt has no named version;
-- scenario is hardcoded;
-- no rubric anchors for what 0, 5, or 10 mean;
-- no evidence spans;
-- no abstention field;
-- no usage/cost metadata capture;
-- temperature is `0.2`, so do not claim deterministic behavior.
+- no live repeated-run stability benchmark;
+- no human-agreement report;
+- no usage/cost metadata report from live provider calls;
+- no calibrated confidence claim.
 
-Minimum next prompt improvement, when Phase 3 begins:
+Minimum next AI-quality improvement:
 
-1. Move prompt text/version into a named constant or prompt module.
-2. Add rubric anchors for clarity, structure, conciseness, and audience awareness.
-3. Add evaluation status such as `valid`, `low_audio_quality`, `insufficient_speech`, or `abstained`.
-4. Add evidence references after the domain schema can store them.
-5. Store provider/model/prompt/schema versions with each evaluation.
+1. Run the manual live Gemini checklist with approved credentials.
+2. Add a small synthetic/consented live evaluation report with denominators and failures.
+3. Compare repeated runs for stability before changing prompts.
+4. Add cost/latency logging before any shared beta.
 
 ## Tech stack judgment
 
@@ -176,32 +139,30 @@ Do not add:
 - PyTorch/fine-tuning;
 - social/community features;
 - body-language inference;
-- Android app before the backend loop is verified.
+- long-term adaptive profile claims before evidence-gated profile logic is implemented.
 
 ## Step-by-step execution order
 
-1. Complete PR 1 manual verification in Chrome with DevTools and valid Gemini key.
-2. Fix any manual verification failures before architecture work.
-3. Implement PR 2A: Alembic and domain schema only.
-4. Implement anonymous ownership and session context.
-5. Implement same-session retry comparison for the fixed 60-second explanation.
-6. Add evidence-grounded evaluator status and prompt/rubric versioning.
-7. Add Android-first UX only after the backend loop is real.
+1. Complete live browser and Android device verification with valid backend Gemini credentials.
+2. Fix any media, latency, provider or API failures before expanding features.
+3. Add production guardrails: rate limits, cost limits, retention/deletion and deployment smoke.
+4. Run a small user/pilot validation before claiming learning outcomes.
+5. Add adaptive profile updates only after evidence and user behavior justify them.
 
 ## Acceptance criteria for “aligned enough to proceed”
 
-The project is aligned enough for Phase 2 only when:
+The project is aligned enough for release hardening only when:
 
-- real browser upload is proven audio-only;
-- valid Gemini key produces a renderable response;
-- recording permissions and auto-stop work manually;
+- real browser and Android upload are proven audio-only;
+- valid Gemini key produces renderable responses with acceptable latency;
+- recording permissions and cleanup work manually on real devices;
 - failed provider/backend paths preserve local review;
-- database remains free of profile mutations in PR 1;
-- all automated tests pass.
+- adaptive profile mutations remain blocked until evidence-gated policy exists;
+- all automated tests and selected release checks pass.
 
-Until then, the correct answer to “is it ready for Phase 2?” is:
+Until then, the correct answer to "is it ready for public beta?" is:
 
-> Not yet. The product direction is right, but the live browser/provider path is still unverified.
+> Not yet. The product direction and deterministic engineering are strong, but live provider, real-device and release-path evidence are still unverified.
 
 ## Highest-leverage simplification
 

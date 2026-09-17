@@ -1,88 +1,52 @@
+# Aura Coach Android Client
+
 This React Native client implements the focused practice loop: setup, record locally, review privately, receive one evidence-backed target, retry and compare. It uses the same backend contract as the web prototype.
 
-# Getting Started
+## Product Scope
 
-> **Note**: Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
+The Android app is intentionally narrow:
 
-## Step 1: Start Metro
+- Practice one technical project explanation for a recruiter or nontechnical listener.
+- Keep video replay local to the device.
+- Upload only the extracted audio track to the backend.
+- Show AI feedback only when the backend returns validated, evidence-grounded output.
+- Keep retry comparison backend-owned instead of relying on frontend memory.
 
-First, you will need to run **Metro**, the JavaScript build tool for React Native.
+Do not present this client as Play Store production-ready until real-device recording, release signing, privacy disclosures and staged rollout are verified.
 
-To start the Metro dev server, run the following command from the root of your React Native project:
+## Local Setup
+
+Install the React Native Android environment from the official guide, including:
+
+- Node.js compatible with the root CI configuration.
+- JDK 17.
+- Android Studio with Android SDK, platform tools and an Android API level supported by the project.
+
+Then install dependencies from this directory:
 
 ```sh
-# Using npm
+npm ci
+```
+
+## Development
+
+Start Metro:
+
+```sh
 npm start
-
-# OR using Yarn
-yarn start
 ```
 
-## Step 2: Build and run your app
-
-With Metro running, open a new terminal window/pane from the root of your React Native project, and use one of the following commands to build and run your Android or iOS app:
-
-### Android
+Run on an Android emulator or connected Android device:
 
 ```sh
-# Using npm
 npm run android
-
-# OR using Yarn
-yarn android
 ```
 
-### iOS
+Use the backend API configured for your local or staging environment. Do not put Gemini/provider secrets in the mobile app.
 
-For iOS, remember to install CocoaPods dependencies (this only needs to be run on first clone or after updating native deps).
+## Quality Checks
 
-The first time you create a new project, run the Ruby bundler to install CocoaPods itself:
-
-```sh
-bundle install
-```
-
-Then, and every time you update your native dependencies, run:
-
-```sh
-bundle exec pod install
-```
-
-For more information, please visit [CocoaPods Getting Started guide](https://guides.cocoapods.org/using/getting-started.html).
-
-```sh
-# Using npm
-npm run ios
-
-# OR using Yarn
-yarn ios
-```
-
-If everything is set up correctly, you should see your new app running in the Android Emulator, iOS Simulator, or your connected device.
-
-This is one way to run your app — you can also build it directly from Android Studio or Xcode.
-
-## Step 3: Modify your app
-
-Now that you have successfully run the app, let's make changes!
-
-Open `App.tsx` in your text editor of choice and make some changes. When you save, your app will automatically update and reflect these changes — this is powered by [Fast Refresh](https://reactnative.dev/docs/fast-refresh).
-
-When you want to forcefully reload, for example to reset the state of your app, you can perform a full reload:
-
-- **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Dev Menu**, accessed via <kbd>Ctrl</kbd> + <kbd>M</kbd> (Windows/Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (macOS).
-- **iOS**: Press <kbd>R</kbd> in iOS Simulator.
-
-## Congratulations! :tada:
-
-You've successfully run and modified your React Native App. :partying_face:
-
-### Now what?
-
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [docs](https://reactnative.dev/docs/getting-started).
-
-# Quality checks
+Run these before committing mobile changes:
 
 ```sh
 npm run typecheck
@@ -90,7 +54,9 @@ npm run lint
 npm test
 ```
 
-## Android debug build
+These checks validate TypeScript, lint rules and React Native rendering/navigation boundaries. They do not replace real-device camera, microphone or upload testing.
+
+## Android Debug Build
 
 React Native native modules can exceed Windows CMake path limits when this repo lives under a long OneDrive path. For local Android verification on Windows, use a short working path and build a focused ARM64 debug APK:
 
@@ -98,7 +64,9 @@ React Native native modules can exceed Windows CMake path limits when this repo 
 gradlew.bat :app:assembleDebug --no-daemon --max-workers=1 -PreactNativeArchitectures=arm64-v8a
 ```
 
-## Release signing
+The most recent verified receipt was produced from a fresh short-path checkout using the command above. Full multi-ABI and signed release builds remain separate release gates.
+
+## Release Signing
 
 Release signing is intentionally not configured with the debug keystore. A release build requires these environment variables, supplied by a secret manager or a secure local shell:
 
@@ -107,18 +75,14 @@ Release signing is intentionally not configured with the debug keystore. A relea
 - `AURACOACH_RELEASE_KEY_ALIAS`
 - `AURACOACH_RELEASE_KEY_PASSWORD`
 
-Real-device recording, signed release artifacts, Play Console configuration and staged rollout are not yet verified.
+Never commit `.keystore` or `.jks` files. The root `.gitignore` blocks those files, but secret handling still depends on local and CI discipline.
 
-# Troubleshooting
+## Unverified Release Gates
 
-If you're having issues getting the above steps to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
+The following are not complete yet:
 
-# Learn More
-
-To learn more about React Native, take a look at the following resources:
-
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
+- Real-device record -> review -> upload -> feedback flow.
+- Live Gemini behavior with approved backend credentials.
+- Signed release APK/AAB.
+- Play Console internal track setup.
+- Privacy policy, Data safety form and staged rollout.

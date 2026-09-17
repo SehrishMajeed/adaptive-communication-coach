@@ -1,6 +1,6 @@
 # Android-first system design
 
-Status: target direction, not implemented Android client. The current React web app remains the proof that capture, audio-only upload, Gemini evaluation and retry comparison can work. The flagship product direction is an Android app for Google Play.
+Status: Android-first target direction with an implemented React Native shell. The web app remains the browser proof for capture, audio-only upload, Gemini evaluation and retry comparison. The Android client now demonstrates the Play Store product direction, but real-device recording, signed release artifacts and Play Console rollout are still unverified.
 
 ## Product constraint
 
@@ -52,7 +52,7 @@ User action
   -> media or API service
   -> validated response
   -> UI state
-  -> local retry comparison
+  -> backend-owned retry comparison
 ```
 
 The app must keep video local. The backend remains the authority for media validation, deterministic metrics and model evaluation.
@@ -60,24 +60,24 @@ The app must keep video local. The backend remains the authority for media valid
 ## Android MVP screens
 
 1. **Onboarding trust screen**: one sentence promise, camera/mic explanation, "video stays on device" disclosure.
-2. **Scenario setup**: fixed default "explain a technical project to a recruiter"; editable topic later.
-3. **Record screen**: visible 60-second timer, mic/camera state, manual stop, permission recovery.
+2. **Scenario setup**: scenario, audience, goal and target duration.
+3. **Record screen**: visible timer, mic/camera state, manual stop, permission recovery.
 4. **Review screen**: full replay, muted presence review, audio-only voice review.
-5. **Feedback screen**: four bounded rubric dimensions, one priority, one drill, transcript disclosure.
-6. **Retry comparison screen**: compare the new attempt with the previous attempt in the same session.
+5. **Feedback screen**: bounded rubric dimensions, one priority, one drill, transcript evidence and provenance.
+6. **Retry comparison screen**: compare the new attempt with the previous attempt in the same backend session.
 7. **Limits screen**: what the AI can and cannot know.
 
 No dashboard, streaks, social sharing or generic chatbot until the first loop proves useful.
 
 ## API contract direction
 
-The Android app should consume the same backend capability, but Phase 2 should promote it from "latest demo attempt" to explicit owned resources:
+The Android app consumes the same explicit owned resources that replaced the earlier "latest demo attempt" shape:
 
 ```text
 POST /api/practice-sessions
 POST /api/practice-sessions/{session_id}/attempts
 GET  /api/practice-sessions/{session_id}
-GET  /api/practice-sessions/{session_id}/comparison
+GET  /api/practice-sessions/{session_id}/attempts
 ```
 
 Required request metadata:
@@ -157,11 +157,12 @@ Official references:
 
 Build in this order:
 
-1. Verified web vertical slice: live Gemini, audio-only upload and retry comparison.
+1. Web vertical slice: capture, local review, audio-only upload and feedback flow.
 2. Durable backend session model: owned practice sessions and linked baseline/retry attempts.
 3. Evidence-grounded evaluator: prompt/model/schema versions and transcript evidence references.
-4. React Native Android shell: record, review, feedback and retry flow.
-5. Android hardening: permissions, crash reporting, accessibility, device tests and release build.
-6. Small user pilot: measured completion, retry and trust outcomes.
+4. React Native Android shell: setup, record, review, feedback and retry flow.
+5. Android hardening: CI checks, accessibility metadata, safe logging, release-signing guardrails and debug APK receipt.
+6. Release validation: real-device media flow, signed release artifact, Play Console internal track and staged rollout.
+7. Small user pilot: measured completion, retry and trust outcomes.
 
 Each milestone should produce a demo, test receipt and honest README update.
