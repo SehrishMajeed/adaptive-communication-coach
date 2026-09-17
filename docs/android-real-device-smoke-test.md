@@ -75,6 +75,33 @@ get-state exit code: 1
 
 Windows present-device scan showed USB controllers/hubs but no Android, ADB, MTP, Pixel, Samsung, Xiaomi, OnePlus, Huawei, Motorola, Oppo, Vivo or Realme device. The device-side USB debugging authorization step remains incomplete.
 
+## USB Driver Check
+
+The Android SDK Google USB Driver package was downloaded locally:
+
+```text
+C:\Users\sehri\AppData\Local\Android\Sdk\extras\google\usb_driver\android_winusb.inf
+```
+
+Attempting to add it to the Windows driver store from the current shell failed because the shell is not elevated:
+
+```text
+Microsoft PnP Utility
+Adding driver package: android_winusb.inf
+Failed to add driver package: Access is denied.
+Total driver packages: 1
+Added driver packages: 0
+pnputil exit code: 5
+```
+
+If Windows still does not detect the phone after trying a data-capable cable and another USB port, run PowerShell as Administrator and install the driver manually:
+
+```powershell
+pnputil /add-driver "$env:LOCALAPPDATA\Android\Sdk\extras\google\usb_driver\android_winusb.inf" /install
+```
+
+For Samsung, Xiaomi, OnePlus, Huawei, Motorola, Oppo, Vivo or Realme devices, prefer the official OEM USB driver if the Google driver does not bind to the device.
+
 ## Live Gemini Receipt
 
 Command shape:
