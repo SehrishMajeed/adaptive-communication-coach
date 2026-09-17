@@ -1,10 +1,11 @@
 name: Agentic AI Evaluation
 
 on:
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+  workflow_dispatch:
+
+concurrency:
+  group: agentic-evaluation-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   evaluate:
@@ -26,10 +27,9 @@ jobs:
         
     - name: Run Agentic Evaluation Pipeline
       env:
-        # Note: In production, GEMINI_API_KEY must be stored in GitHub Secrets
         GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
       run: |
-        python backend/scripts/evaluate_agent.py
+        python -m backend.scripts.evaluate_agent
         
     - name: Upload Evaluation Report
       if: always()

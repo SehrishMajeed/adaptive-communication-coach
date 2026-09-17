@@ -14,7 +14,7 @@ export async function getOwnerToken(): Promise<string> {
       await AsyncStorage.setItem(OWNER_TOKEN_KEY, token);
     }
     return token;
-  } catch (e) {
+  } catch {
     // Fallback if AsyncStorage fails, token will be valid for the session
     return randomId();
   }

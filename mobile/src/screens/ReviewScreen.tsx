@@ -17,9 +17,9 @@ export const ReviewScreen: React.FC<Props> = ({ navigation, route }) => {
     try {
       const result = await analyzeRecording({ audioUri, videoUri, durationSeconds }, sessionId, setup);
       navigation.replace('Feedback', { setup, result });
-    } catch (error: any) {
+    } catch (error) {
       setIsSubmitting(false);
-      Alert.alert('Analysis Failed', error.message || 'An error occurred during analysis.');
+      Alert.alert('Analysis Failed', error instanceof Error ? error.message : 'An error occurred during analysis.');
     }
   };
 

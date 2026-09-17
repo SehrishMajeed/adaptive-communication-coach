@@ -9,10 +9,11 @@
  */
 
 interface ErrorContext {
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 const REDACTED_STRING = '[REDACTED]';
+const developmentConsole: Pick<Console, 'log' | 'error'> | undefined = globalThis.console;
 
 /**
  * Strips PII and sensitive data from the error context.
@@ -39,9 +40,9 @@ export const logger = {
   info: (message: string, context?: ErrorContext) => {
     const safeContext = context ? redactContext(context) : undefined;
     if (__DEV__) {
-      console.log(`[INFO]: ${message}`, safeContext || '');
+      developmentConsole?.log(`[INFO]: ${message}`, safeContext || '');
     }
-    // TODO: Send to remote analytics (e.g., Mixpanel / PostHog) in Production
+    // Remote analytics can be wired here after consent, retention and redaction policy are finalized.
   },
 
   /**
@@ -52,10 +53,9 @@ export const logger = {
     const safeContext = context ? redactContext(context) : undefined;
     
     if (__DEV__) {
-      console.error(`[ERROR]: ${errorMessage}`, safeContext || '');
+      developmentConsole?.error(`[ERROR]: ${errorMessage}`, safeContext || '');
     }
     
-    // TODO: Send to Sentry or Crashlytics in Production
-    // Sentry.captureException(error, { extra: safeContext });
+    // Crash reporting can be wired here after consent, retention and redaction policy are finalized.
   }
 };

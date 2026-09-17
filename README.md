@@ -26,7 +26,7 @@ The Android plan is documented in [Android-first system design](docs/android-fir
 
 ## Local development
 
-CI uses Python 3.10 and Node 22.22.2. The current frontend test dependencies require Node 22.22.2+, a compatible Node 24 release (24.15+), or Node 26+. Python runtime dependencies are not locked yet.
+CI uses Python 3.10 and the latest stable Node 22 release. The current frontend test dependencies require a recent Node 22 release, a compatible Node 24 release (24.15+), or Node 26+. Python runtime dependencies are not locked yet.
 
 Backend, from the repository root:
 
@@ -63,7 +63,7 @@ From the repository root:
 
 ```sh
 python -m pytest tests/
-python backend/scripts/evaluate_agent.py
+python -m backend.scripts.evaluate_agent
 alembic upgrade head
 cd frontend
 npm run typecheck
@@ -74,12 +74,12 @@ npm run typecheck
 npm test
 ```
 
-Local verification on Python 3.14.4 / Node 26.4.0: **106 backend tests, 34 frontend tests, and the mobile test suite pass**, and TypeScript/production builds pass. Backend tests include actual multipart HTTP requests, real isolated SQLite round-trips, Alembic migration checks, session-scoped attempt APIs, ownership checks, persisted intervention/comparison behavior, evidence validation, abstention validation, offline evaluation fixtures, coaching policy tests and compiled workflow paths with a mocked provider. The `evaluate_agent.py` runner validates live LLM integration against a synthetic audio corpus. Frontend tests cover session-scoped upload, practice context visibility, review screen modes, evidence rendering and backend-owned comparison rendering. Mobile tests cover the React Native rendering and navigation boundaries. The SDK emits one deprecation warning on Python 3.14. These are local results, but automated testing occurs via GitHub Actions (`.github/workflows/ci.yml`).
+Local verification on Python 3.14.4 / Node 26.4.0: **108 backend tests, 34 frontend tests, and the mobile test suite pass**, and TypeScript/production builds pass. Backend tests include actual multipart HTTP requests, real isolated SQLite round-trips, Alembic migration checks, session-scoped attempt APIs, ownership checks, persisted intervention/comparison behavior, evidence validation, abstention validation, offline evaluation fixtures, coaching policy tests, compiled workflow paths with a mocked provider and live-evaluation runner safety checks. The `evaluate_agent.py` runner is a manual live Gemini evaluation entry point; without `GEMINI_API_KEY`, it writes an explicit skipped report and makes no provider call. Frontend tests cover session-scoped upload, practice context visibility, review screen modes, evidence rendering and backend-owned comparison rendering. Mobile tests cover the React Native rendering and navigation boundaries. The SDK emits one deprecation warning on Python 3.14. Deterministic automated testing occurs via GitHub Actions (`.github/workflows/ci.yml`); live provider evaluation is manual via `.github/workflows/agentic_evaluation.yml`.
 
 ## What this demonstrates
 
 - Product development: a narrow, high-pain communication practice loop instead of a generic AI wrapper.
-- AI engineering: versioned prompts, bounded Gemini output, schema validation, timeout control, safe failure behavior, and an automated agentic evaluation pipeline.
+- AI engineering: versioned prompts, bounded Gemini output, schema validation, timeout control, safe failure behavior, offline evaluation fixtures, and a manual live Gemini evaluation gate.
 - Full-stack execution: React/React Native media capture/review, FastAPI validation/persistence, GitHub Actions CI/CD automated validation, and contract tests across backend, web frontend, and mobile.
 - Engineering maturity: privacy boundaries, crash reporting boundaries, accessibility (a11y) roles, known limitations, ADRs, roadmap and claim-to-evidence documentation.
 

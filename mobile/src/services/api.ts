@@ -4,6 +4,12 @@ import { logger } from '../shared/observability/logger';
 import type { Recording } from './recording';
 import { getOwnerToken } from './ownerToken';
 
+type ReactNativeFilePart = {
+  uri: string;
+  type: string;
+  name: string;
+};
+
 const apiBase = () => {
   if (__DEV__) {
     return Platform.OS === 'android' ? 'http://10.0.2.2:8000' : 'http://localhost:8000';
@@ -43,7 +49,6 @@ export const createPracticeSession = async (setup: PracticeSetup = defaultSetup)
 };
 
 export const analyzeRecording = async (recording: Recording, sessionId?: number | null, setup: PracticeSetup = defaultSetup): Promise<PracticeAttemptResult> => {
-  // Mobile recording audio logic - we assume the Recording object already points to a valid file URI or contains the blob
   const activeSessionId = sessionId ?? await createPracticeSession(setup);
   const token = await getOwnerToken();
   
@@ -52,7 +57,7 @@ export const analyzeRecording = async (recording: Recording, sessionId?: number 
     uri: recording.audioUri,
     type: 'audio/wav',
     name: 'recording.wav'
-  } as any);
+  } as ReactNativeFilePart);
   form.append('duration_seconds', String(recording.durationSeconds));
   form.append('idempotency_key', randomId());
   

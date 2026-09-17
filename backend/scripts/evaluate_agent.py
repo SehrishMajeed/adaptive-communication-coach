@@ -1,145 +1,202 @@
-import asyncio
+from __future__ import annotations
+
+import argparse
 import json
 import os
+import sys
 import time
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, Any
+from typing import Callable
 
-from backend.app.services.llm_provider import evaluate_communication
+if __package__ is None or __package__ == "":
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+
 from backend.app.domain.evaluation import CommunicationEvaluation
+from backend.app.services.llm_provider import GEMINI_MODEL, evaluate_communication
 
 
-CORPUS_DIR = Path(__file__).resolve().parent.parent.parent / "tests" / "corpus"
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+DEFAULT_CORPUS_DIR = PROJECT_ROOT / "tests" / "corpus"
+DEFAULT_REPORT_PATH = PROJECT_ROOT / "evaluation_report.md"
 
 
-async def evaluate_agentic_pipeline():
-    print("Starting YC-Level Agentic Evaluation Pipeline...")
-    if not CORPUS_DIR.exists():
-        print(f"Corpus directory {CORPUS_DIR} not found. Please create it and add .json test cases.")
-        return
+@dataclass(frozen=True)
+class EvaluationCaseResult:
+    case_id: str
+    passed: bool
+    latency_seconds: float
+    errors: list[str]
 
-    test_files = list(CORPUS_DIR.glob("*.json"))
+
+@dataclass(frozen=True)
+class EvaluationRunResult:
+    status: str
+    total: int
+    passed: int
+    failed: int
+    average_latency_seconds: float
+    report_path: Path
+
+
+def _write_report(
+    *,
+    report_path: Path,
+    status: str,
+    model: str,
+    total: int,
+    passed: int,
+    failed: int,
+    average_latency_seconds: float,
+    details: list[EvaluationCaseResult],
+    note: str | None = None,
+) -> None:
+    accuracy = (passed / total * 100) if total else 0.0
+    lines = [
+        "# Agentic Evaluation Pipeline Report",
+        "",
+        f"**Date**: {time.strftime('%Y-%m-%d %H:%M:%S')}",
+        f"**Status**: {status}",
+        f"**Model**: {model}",
+        "",
+        "## Summary",
+        f"- **Total Tests**: {total}",
+        f"- **Passed**: {passed}",
+        f"- **Failed**: {failed}",
+        f"- **Accuracy**: {accuracy:.1f}%",
+        f"- **Average Latency**: {average_latency_seconds:.2f}s",
+        "",
+    ]
+    if note:
+        lines.extend(["## Note", note, ""])
+    if details:
+        lines.append("## Details")
+        for result in details:
+            marker = "PASS" if result.passed else "FAIL"
+            lines.extend([
+                f"### {result.case_id} - {marker}",
+                f"- Latency: {result.latency_seconds:.2f}s",
+            ])
+            if result.errors:
+                lines.append(f"- Errors: {', '.join(result.errors)}")
+            lines.append("")
+    report_path.write_text("\n".join(lines), encoding="utf-8")
+
+
+def _validate_case(
+    test_case: dict,
+    evaluation: CommunicationEvaluation,
+) -> list[str]:
+    expected = test_case.get("expected", {})
+    errors: list[str] = []
+    expected_status = expected.get("evaluator_status")
+    if expected_status and evaluation.evaluator_status != expected_status:
+        errors.append(f"Status mismatch: expected {expected_status}, got {evaluation.evaluator_status}")
+    if evaluation.evaluator_status == "completed":
+        if not evaluation.evidence:
+            errors.append("No evidence provided in completed evaluation.")
+        expected_focus = expected.get("recommended_focus")
+        if expected_focus and (not evaluation.recommended_focus or evaluation.recommended_focus[0] != expected_focus):
+            errors.append(f"Focus mismatch: expected {expected_focus}, got {evaluation.recommended_focus}")
+    return errors
+
+
+def run_live_evaluation(
+    *,
+    corpus_dir: Path = DEFAULT_CORPUS_DIR,
+    report_path: Path = DEFAULT_REPORT_PATH,
+    evaluator: Callable[[bytes, str, str], CommunicationEvaluation] = evaluate_communication,
+    require_api_key: bool = True,
+) -> EvaluationRunResult:
+    if require_api_key and not os.getenv("GEMINI_API_KEY"):
+        note = "Skipped because GEMINI_API_KEY is not configured. No live provider call was attempted."
+        _write_report(
+            report_path=report_path,
+            status="skipped",
+            model=GEMINI_MODEL,
+            total=0,
+            passed=0,
+            failed=0,
+            average_latency_seconds=0.0,
+            details=[],
+            note=note,
+        )
+        print(note)
+        return EvaluationRunResult("skipped", 0, 0, 0, 0.0, report_path)
+
+    if not corpus_dir.exists():
+        raise FileNotFoundError(f"Corpus directory not found: {corpus_dir}")
+
+    test_files = sorted(corpus_dir.glob("*.json"))
     if not test_files:
-        print(f"No .json test cases found in {CORPUS_DIR}.")
-        return
+        raise FileNotFoundError(f"No .json test cases found in {corpus_dir}")
 
-    results = []
+    print("Starting live Agentic Evaluation Pipeline...")
+    results: list[EvaluationCaseResult] = []
     total_latency = 0.0
-    passed = 0
-    total = len(test_files)
 
     for test_file in test_files:
-        with open(test_file, "r") as f:
-            test_case = json.load(f)
-        
-        print(f"\nEvaluating: {test_case.get('id', test_file.name)}")
+        test_case = json.loads(test_file.read_text(encoding="utf-8"))
+        case_id = test_case.get("id", test_file.stem)
         scenario = test_case.get("scenario", "Explain a technical project to a recruiter in 60 seconds.")
-        audio_path_str = test_case.get("audio_path")
-        
-        if not audio_path_str:
-            print("  Skipped: No audio_path provided in test case.")
+        audio_path_name = test_case.get("audio_path")
+        errors: list[str] = []
+        started = time.monotonic()
+
+        if not audio_path_name:
+            errors.append("No audio_path provided in test case.")
+        else:
+            audio_path = corpus_dir / audio_path_name
+            if not audio_path.exists():
+                errors.append(f"Audio file not found: {audio_path}")
+
+        if errors:
+            latency = time.monotonic() - started
+            results.append(EvaluationCaseResult(case_id, False, latency, errors))
             continue
-            
-        audio_path = CORPUS_DIR / audio_path_str
-        if not audio_path.exists():
-            print(f"  Skipped: Audio file {audio_path} not found.")
-            continue
-            
-        with open(audio_path, "rb") as audio_file:
-            audio_bytes = audio_file.read()
-            
-        mime_type = "audio/wav" if audio_path.suffix == ".wav" else "audio/mp3"
-        
-        start_time = time.time()
+
+        audio_path = corpus_dir / audio_path_name
+        mime_type = "audio/wav" if audio_path.suffix.lower() == ".wav" else "audio/mpeg"
         try:
-            evaluation = evaluate_communication(audio_bytes, mime_type, scenario)
-            latency = time.time() - start_time
-            total_latency += latency
-            
-            # Check expected outcome
-            expected = test_case.get("expected", {})
-            expected_status = expected.get("evaluator_status")
-            
-            is_pass = True
-            errors = []
-            
-            if expected_status and evaluation.evaluator_status != expected_status:
-                is_pass = False
-                errors.append(f"Status mismatch: expected {expected_status}, got {evaluation.evaluator_status}")
-                
-            if evaluation.evaluator_status == "completed":
-                if not evaluation.evidence:
-                    is_pass = False
-                    errors.append("No evidence provided in completed evaluation.")
-                
-                expected_focus = expected.get("recommended_focus")
-                if expected_focus and (not evaluation.recommended_focus or evaluation.recommended_focus[0] != expected_focus):
-                    is_pass = False
-                    errors.append(f"Focus mismatch: expected {expected_focus}, got {evaluation.recommended_focus}")
-            
-            if is_pass:
-                passed += 1
-                print(f"  [PASS] Latency: {latency:.2f}s")
-            else:
-                print(f"  [FAIL] Latency: {latency:.2f}s. Errors: {errors}")
-                
-            results.append({
-                "id": test_case.get("id", test_file.name),
-                "pass": is_pass,
-                "latency": latency,
-                "errors": errors,
-                "output": evaluation.model_dump()
-            })
-            
-        except Exception as e:
-            latency = time.time() - start_time
-            total_latency += latency
-            print(f"  [ERROR] {str(e)}")
-            results.append({
-                "id": test_case.get("id", test_file.name),
-                "pass": False,
-                "latency": latency,
-                "errors": [str(e)],
-                "output": None
-            })
+            evaluation = evaluator(audio_path.read_bytes(), mime_type, scenario)
+            errors = _validate_case(test_case, evaluation)
+        except Exception as exc:
+            errors = [f"{type(exc).__name__}: {exc}"]
 
-    # Generate Report
-    print("\n==============================================")
-    print("        EVALUATION PIPELINE REPORT            ")
-    print("==============================================")
-    print(f"Total Tests: {total}")
-    print(f"Passed:      {passed}")
-    print(f"Failed:      {total - passed}")
-    print(f"Avg Latency: {(total_latency / total) if total else 0:.2f}s")
-    
-    report_md = f"""# Agentic Evaluation Pipeline Report
+        latency = time.monotonic() - started
+        total_latency += latency
+        passed = not errors
+        results.append(EvaluationCaseResult(case_id, passed, latency, errors))
+        print(f"{case_id}: {'PASS' if passed else 'FAIL'} ({latency:.2f}s)")
 
-**Date**: {time.strftime('%Y-%m-%d %H:%M:%S')}
-**Model**: Gemini 2.5 Flash
+    total = len(results)
+    passed_count = sum(1 for result in results if result.passed)
+    failed_count = total - passed_count
+    average_latency = total_latency / total if total else 0.0
+    status = "passed" if failed_count == 0 else "failed"
+    _write_report(
+        report_path=report_path,
+        status=status,
+        model=GEMINI_MODEL,
+        total=total,
+        passed=passed_count,
+        failed=failed_count,
+        average_latency_seconds=average_latency,
+        details=results,
+    )
+    print(f"Detailed report written to {report_path}")
+    return EvaluationRunResult(status, total, passed_count, failed_count, average_latency, report_path)
 
-## Summary
-- **Total Tests**: {total}
-- **Passed**: {passed}
-- **Failed**: {total - passed}
-- **Accuracy**: {(passed / total * 100) if total else 0:.1f}%
-- **Average Latency**: {(total_latency / total) if total else 0:.2f}s
 
-## Details
-"""
-    for r in results:
-        status = "✅ PASS" if r["pass"] else "❌ FAIL"
-        report_md += f"### {r['id']} - {status}\n"
-        report_md += f"- Latency: {r['latency']:.2f}s\n"
-        if not r["pass"]:
-            report_md += f"- Errors: {', '.join(r['errors'])}\n"
-        report_md += "\n"
-        
-    report_path = Path("evaluation_report.md")
-    with open(report_path, "w", encoding="utf-8") as f:
-        f.write(report_md)
-        
-    print(f"\nDetailed report written to {report_path.absolute()}")
+def main() -> int:
+    parser = argparse.ArgumentParser(description="Run the live Gemini evaluation corpus.")
+    parser.add_argument("--corpus-dir", type=Path, default=DEFAULT_CORPUS_DIR)
+    parser.add_argument("--report-path", type=Path, default=DEFAULT_REPORT_PATH)
+    args = parser.parse_args()
+
+    result = run_live_evaluation(corpus_dir=args.corpus_dir, report_path=args.report_path)
+    return 1 if result.status == "failed" else 0
 
 
 if __name__ == "__main__":
-    asyncio.run(evaluate_agentic_pipeline())
+    raise SystemExit(main())

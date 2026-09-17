@@ -40,7 +40,7 @@ For a fast review, use this order:
 | Claim | Evidence in repo | Current honesty boundary |
 | --- | --- | --- |
 | Practical AI product | FastAPI backend, React frontend, Gemini provider adapter, structured response schema | Prototype, not production-ready |
-| AI engineering discipline | Versioned prompt builder, schema validation, provider timeout, mocked provider tests, automated agentic CI evaluation against golden corpus | No live reliability benchmark yet |
+| AI engineering discipline | Versioned prompt builder, schema validation, provider timeout, mocked provider tests, offline evaluator fixtures and manual live Gemini evaluation gate | No live reliability benchmark yet |
 | Privacy-aware design | Browser records video locally and uploads a separate audio-only WAV | Manual Chrome DevTools verification still pending |
 | Deterministic measurement | Duration, WPM and fillers are computed outside Gemini | Counts depend on transcript fidelity |
 | Product judgment | Narrow technical-explanation wedge and one-priority feedback | Product-market fit is not proven |
